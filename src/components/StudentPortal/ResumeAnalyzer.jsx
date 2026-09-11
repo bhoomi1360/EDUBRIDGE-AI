@@ -297,8 +297,8 @@ Experience: Software Engineering Intern at TechCorp Solutions (Reduced API respo
 
   const atsScore    = result?.score ?? currentStudent.resumeATSScore ?? 84;
   const scoreGrade  = atsScore >= 85 ? 'Executive Ready' : atsScore >= 70 ? 'Strong Alignment' : atsScore >= 55 ? 'Average Alignment' : 'Needs Optimization';
-  const scoreColor  = atsScore >= 85 ? 'var(--accent-emerald)' : atsScore >= 70 ? 'var(--accent-indigo)' : atsScore >= 55 ? 'var(--accent-amber)' : 'var(--accent-rose)';
-  const conic       = `conic-gradient(${scoreColor} 0% ${atsScore}%, var(--border-color) ${atsScore}% 100%)`;
+  const scoreColor  = atsScore >= 85 ? 'var(--accent-emerald)' : atsScore >= 70 ? 'var(--accent-orange)' : atsScore >= 55 ? 'var(--accent-amber)' : 'var(--accent-crimson)';
+  const conic       = `conic-gradient(${scoreColor} 0% ${atsScore}%, rgba(255, 255, 255, 0.08) ${atsScore}% 100%)`;
 
   const shownSkills   = result?.detectedSkills   ?? ['React / Next.js', 'Python & PyTorch', 'Node.js & APIs', 'Data Structures & Alg', 'Docker & DevOps'];
   const shownMissing  = result?.missingKeywords  ?? TRENDING_MISSING.slice(0, 3);
@@ -326,7 +326,7 @@ Experience: Software Engineering Intern at TechCorp Solutions (Reduced API respo
       {/* ── Top Banner ── */}
       <div className="glass-card flex-between gsap-resume-item" style={{ gap: '20px', flexWrap: 'wrap' }}>
         <div>
-          <span className="badge badge-indigo" style={{ marginBottom: '8px' }}>
+          <span className="badge badge-orange" style={{ marginBottom: '8px' }}>
             <FileCheck2 size={12} /> AI Resume Optimizer
           </span>
           <h2 style={{ fontSize: '1.7rem', fontWeight: 800 }}>
@@ -432,14 +432,14 @@ Experience: Software Engineering Intern at TechCorp Solutions (Reduced API respo
               </>
             ) : (
               <>
-                <Upload size={28} color={isDragOver ? 'var(--accent-cyan)' : 'var(--accent-indigo)'} />
+                <Upload size={28} color={isDragOver ? 'var(--accent-orange)' : 'var(--accent-orange)'} />
                 <div style={{ fontSize: '0.95rem', fontWeight: 700 }}>
                   {isDragOver ? 'Drop file to analyze!' : 'Drag & drop resume file (.pdf, .txt)'}
                 </div>
                 <div style={{ fontSize: '0.76rem', color: 'var(--text-muted)' }}>
                   PDF documents automatically extracted and parsed
                 </div>
-                <span className="badge badge-indigo" style={{ marginTop: '4px', cursor: 'pointer' }}>
+                <span className="badge badge-orange" style={{ marginTop: '4px', cursor: 'pointer' }}>
                   <Upload size={12} /> Browse File
                 </span>
               </>

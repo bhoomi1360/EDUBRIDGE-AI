@@ -44,7 +44,7 @@ export default function SkillRadar() {
       {/* Header Info */}
       <div className="glass-card flex-between gsap-radar-item" style={{ gap: '20px', flexWrap: 'wrap' }}>
         <div>
-          <div className="badge badge-cyan" style={{ marginBottom: '8px' }}>
+          <div className="badge badge-orange" style={{ marginBottom: '8px' }}>
             <Target size={12} /> AI Skill Alignment Engine
           </div>
           <h2 style={{ fontSize: '1.7rem', fontWeight: 800 }}>
@@ -58,7 +58,7 @@ export default function SkillRadar() {
         <div style={{ display: 'flex', gap: '14px', flexWrap: 'wrap' }}>
           <div className="glass-card glass-card-sm" style={{ textAlign: 'center', minWidth: '125px', background: 'var(--bg-input)' }}>
             <div style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-muted)' }}>YOUR AVG LEVEL</div>
-            <div style={{ fontSize: '1.75rem', fontWeight: 800, color: 'var(--accent-indigo)', fontFamily: 'var(--font-mono)' }}>
+            <div style={{ fontSize: '1.75rem', fontWeight: 800, color: 'var(--accent-orange)', fontFamily: 'var(--font-mono)' }}>
               {avgStudentScore}%
             </div>
           </div>
@@ -70,7 +70,7 @@ export default function SkillRadar() {
           </div>
           <div className="glass-card glass-card-sm" style={{ textAlign: 'center', minWidth: '125px', background: 'var(--bg-input)' }}>
             <div style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-muted)' }}>SKILL GAP</div>
-            <div style={{ fontSize: '1.75rem', fontWeight: 800, color: gapPercentage === 0 ? 'var(--accent-emerald)' : 'var(--accent-amber)', fontFamily: 'var(--font-mono)' }}>
+            <div style={{ fontSize: '1.75rem', fontWeight: 800, color: gapPercentage === 0 ? 'var(--accent-emerald)' : 'var(--accent-orange)', fontFamily: 'var(--font-mono)' }}>
               {gapPercentage === 0 ? 'Aligned' : `-${gapPercentage}%`}
             </div>
           </div>
@@ -86,13 +86,13 @@ export default function SkillRadar() {
               <h3 style={{ fontSize: '1.15rem', fontWeight: 700 }}>Interactive Skill Polygon</h3>
               <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>Multi-dimensional skill proficiency overlay</p>
             </div>
-            <span className="badge badge-indigo">Live Recharts Vector</span>
+            <span className="badge badge-orange">Live Recharts Vector</span>
           </div>
 
           <div style={{ flex: 1, minHeight: 0 }}>
             <ResponsiveContainer width="100%" height="100%">
               <RadarChart cx="50%" cy="50%" outerRadius="75%" data={currentStudent?.skills || []}>
-                <PolarGrid stroke="var(--border-color)" />
+                <PolarGrid stroke="rgba(255, 255, 255, 0.08)" />
                 <PolarAngleAxis 
                   dataKey="name" 
                   tick={{ fill: 'var(--text-secondary)', fontSize: 11, fontWeight: 600 }} 
@@ -102,25 +102,25 @@ export default function SkillRadar() {
                 <Radar 
                   name="Student Skill Level" 
                   dataKey="level" 
-                  stroke="var(--accent-indigo)" 
-                  fill="var(--accent-indigo)" 
-                  fillOpacity={0.42} 
+                  stroke="#ff5500" 
+                  fill="#ff5500" 
+                  fillOpacity={0.4} 
                 />
                 <Radar 
                   name="Industry Benchmark" 
                   dataKey="benchmark" 
-                  stroke="var(--accent-cyan)" 
-                  fill="var(--accent-cyan)" 
-                  fillOpacity={0.22} 
+                  stroke="#00d2ff" 
+                  fill="#00d2ff" 
+                  fillOpacity={0.18} 
                 />
                 
                 <Tooltip 
                   contentStyle={{ 
-                    background: 'var(--bg-secondary)', 
-                    borderColor: 'var(--border-color)', 
+                    background: '#121319', 
+                    borderColor: 'rgba(255, 255, 255, 0.1)', 
                     borderRadius: '10px',
                     color: 'var(--text-primary)',
-                    boxShadow: '0 10px 25px rgba(0,0,0,0.4)',
+                    boxShadow: '0 10px 25px rgba(0,0,0,0.6)',
                     fontSize: '0.85rem'
                   }} 
                 />
@@ -134,7 +134,7 @@ export default function SkillRadar() {
         <div className="glass-card" style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-              <Sliders size={18} color="var(--accent-indigo)" />
+              <Sliders size={18} color="var(--accent-orange)" />
               <h3 style={{ fontSize: '1.15rem', fontWeight: 700 }}>Live Skill Adjuster & Simulator</h3>
             </div>
             <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>
@@ -157,7 +157,7 @@ export default function SkillRadar() {
                 >
                   <div className="flex-between" style={{ marginBottom: '6px' }}>
                     <span style={{ fontWeight: 600, fontSize: '0.88rem' }}>{skill.name}</span>
-                    <span style={{ fontSize: '0.82rem', fontWeight: 700, fontFamily: 'var(--font-mono)', color: skill.level >= skill.benchmark ? 'var(--accent-emerald)' : 'var(--accent-amber)' }}>
+                    <span style={{ fontSize: '0.82rem', fontWeight: 700, fontFamily: 'var(--font-mono)', color: skill.level >= skill.benchmark ? 'var(--accent-emerald)' : 'var(--accent-orange)' }}>
                       {skill.level}% <span style={{ color: 'var(--text-muted)', fontWeight: 400 }}>/ {skill.benchmark}%</span>
                     </span>
                   </div>
@@ -168,7 +168,7 @@ export default function SkillRadar() {
                     max="100" 
                     value={skill.level} 
                     onChange={(e) => updateStudentSkill(skill.name, Number(e.target.value))}
-                    style={{ width: '100%', accentColor: 'var(--accent-indigo)', cursor: 'pointer' }}
+                    style={{ width: '100%', accentColor: 'var(--accent-orange)', cursor: 'pointer' }}
                   />
                   
                   <div style={{ fontSize: '0.74rem', color: gap <= 0 ? 'var(--accent-emerald)' : 'var(--text-muted)', marginTop: '4px', fontWeight: 500 }}>

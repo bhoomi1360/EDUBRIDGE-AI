@@ -8,10 +8,19 @@ import {
   ExternalLink,
   Sparkles,
   TrendingUp,
-  CheckCircle2,
-  Clock
+  Clock,
+  Activity,
+  Layers,
+  Award,
+  Zap,
+  Flame
 } from 'lucide-react';
-import SkillRadar from './SkillRadar';
+import { 
+  TelemetryCompassMeter, 
+  SegmentedRadialArcMeter, 
+  StreamGlowActivityChart, 
+  ResourceAllocationProgress 
+} from '../Common/CyberTelemetryWidgets';
 import { useGsapStagger, useGsapCounter } from '../../utils/animations';
 
 export default function StudentDashboard({ setActiveTab }) {
@@ -26,11 +35,12 @@ export default function StudentDashboard({ setActiveTab }) {
   } = useApp();
 
   const containerRef = useRef(null);
-  useGsapStagger(containerRef, '.gsap-dash-item', { y: 20, stagger: 0.08 });
+  useGsapStagger(containerRef, '.gsap-dash-item', { y: 16, stagger: 0.06 });
 
   const countScoreRef = useGsapCounter(avgMatchScore);
   const countAtsRef = useGsapCounter(currentStudent?.resumeATSScore || 0);
   const countAppsRef = useGsapCounter(totalApplicationsCount);
+  const countInterviewsRef = useGsapCounter(totalInterviewsCount);
 
   const STATUS_OPTIONS = [
     'Saved',
@@ -42,254 +52,295 @@ export default function StudentDashboard({ setActiveTab }) {
   ];
 
   return (
-    <div ref={containerRef} style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+    <div ref={containerRef} style={{ display: 'flex', flexDirection: 'column', gap: '22px' }}>
       
-      {/* Executive Welcome Banner */}
-      <div 
-        className="glass-card flex-between gsap-dash-item" 
-        style={{ 
-          gap: '20px', 
-          background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.14) 0%, rgba(6, 182, 212, 0.09) 100%)',
-          border: '1px solid rgba(99, 102, 241, 0.25)',
-          flexWrap: 'wrap'
-        }}
-      >
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-            <span className="badge badge-indigo">
-              <Sparkles size={12} /> Career Readiness Command Center
-            </span>
-            <span className="badge badge-cyan">
-              Live Real-Time Telemetry
-            </span>
-          </div>
-          <h1 style={{ fontSize: '1.85rem', fontWeight: 800, margin: '4px 0', lineHeight: 1.2 }}>
-            Welcome back, <span className="gradient-text">{currentStudent?.name}</span>
-          </h1>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '0.92rem', marginTop: '6px' }}>
-            Target Trajectory: <strong style={{ color: 'var(--text-primary)' }}>{currentStudent?.targetRole}</strong> • {currentStudent?.university} ({currentStudent?.department})
-          </p>
-        </div>
-
-        <button 
-          className="btn btn-primary"
-          onClick={() => setActiveTab('skill_radar')}
-          style={{ whiteSpace: 'nowrap' }}
-        >
-          <Target size={16} /> Open Skill Alignment Radar
-        </button>
+      {/* Reference Sub-Navigation Underline Tabs */}
+      <div className="subnav-tabs gsap-dash-item">
+        {[
+          { id: 'dashboard', label: 'Overview' },
+          { id: 'skill_radar', label: 'Skill Radar' },
+          { id: 'resume_analyzer', label: 'ATS Parser' },
+          { id: 'internships', label: 'Opportunities' },
+          { id: 'upskilling', label: 'Upskilling Roadmap' },
+          { id: 'invite_inbox', label: 'Interview Invites' }
+        ].map(tab => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            className={`subnav-tab-btn ${tab.id === 'dashboard' ? 'active' : ''}`}
+          >
+            {tab.label}
+          </button>
+        ))}
       </div>
 
-      {/* 3 Executive Dynamic Metric Cards */}
-      <div className="grid-3 gsap-dash-item">
+      {/* Reference 4-Card Metric Strip */}
+      <div className="grid-4 gsap-dash-item">
         
-        {/* Metric 1: Dynamic Average Skill Match */}
+        {/* Card 1: Dynamic Avg Skill Match */}
         <div 
-          className="glass-card glass-card-interactive flex-between" 
+          className="metric-stat-card glass-card-interactive"
           onClick={() => setActiveTab('skill_radar')}
         >
-          <div>
-            <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-muted)', letterSpacing: '0.05em' }}>
-              DYNAMIC AVG SKILL MATCH
+          <div className="flex-between">
+            <TrendingUp size={16} color="var(--accent-orange)" />
+            <div className="metric-circle-badge">
+              <ArrowUpRight size={14} />
             </div>
-            <div style={{ fontSize: '2.2rem', fontWeight: 800, color: 'var(--accent-indigo)', margin: '4px 0', fontFamily: 'var(--font-mono)' }}>
+          </div>
+          <div>
+            <div style={{ fontSize: '1.9rem', fontWeight: 800, color: 'var(--text-primary)', fontFamily: 'var(--font-mono)', lineHeight: 1.1 }}>
               <span ref={countScoreRef}>{avgMatchScore}</span>%
             </div>
-            <div style={{ fontSize: '0.78rem', color: 'var(--accent-cyan)', fontWeight: 600 }}>
-              Calculated across {opportunities.length} live job openings
+            <div className="flex-between" style={{ marginTop: '4px' }}>
+              <span style={{ fontSize: '0.74rem', color: 'var(--text-muted)' }}>Avg Skill Match</span>
+              <span className="badge badge-emerald" style={{ fontSize: '0.65rem' }}>+12%</span>
             </div>
-          </div>
-          <div style={{
-            width: '52px',
-            height: '52px',
-            borderRadius: '14px',
-            background: 'var(--accent-indigo-glow)',
-            border: '1px solid rgba(99, 102, 241, 0.3)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center'
-          }}>
-            <Target size={26} color="var(--accent-indigo)" />
           </div>
         </div>
 
-        {/* Metric 2: ATS Resume Score */}
+        {/* Card 2: ATS Compliance Score */}
         <div 
-          className="glass-card glass-card-interactive flex-between" 
+          className="metric-stat-card glass-card-interactive"
           onClick={() => setActiveTab('resume_analyzer')}
         >
-          <div>
-            <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-muted)', letterSpacing: '0.05em' }}>
-              ATS RESUME COMPLIANCE
-            </div>
-            <div style={{ fontSize: '2.2rem', fontWeight: 800, color: 'var(--accent-cyan)', margin: '4px 0', fontFamily: 'var(--font-mono)' }}>
-              <span ref={countAtsRef}>{currentStudent?.resumeATSScore || 0}</span>
-              <span style={{ fontSize: '1.2rem', color: 'var(--text-muted)' }}>/100</span>
-            </div>
-            <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', fontWeight: 600 }}>
-              Verified Profile Optimization Index
+          <div className="flex-between">
+            <FileCheck2 size={16} color="var(--accent-cyan)" />
+            <div className="metric-circle-badge">
+              <ArrowUpRight size={14} />
             </div>
           </div>
-          <div style={{
-            width: '52px',
-            height: '52px',
-            borderRadius: '14px',
-            background: 'var(--accent-cyan-glow)',
-            border: '1px solid rgba(6, 182, 212, 0.3)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center'
-          }}>
-            <FileCheck2 size={26} color="var(--accent-cyan)" />
+          <div>
+            <div style={{ fontSize: '1.9rem', fontWeight: 800, color: 'var(--text-primary)', fontFamily: 'var(--font-mono)', lineHeight: 1.1 }}>
+              <span ref={countAtsRef}>{currentStudent?.resumeATSScore || 0}</span>
+              <span style={{ fontSize: '1.1rem', color: 'var(--text-muted)' }}>/100</span>
+            </div>
+            <div className="flex-between" style={{ marginTop: '4px' }}>
+              <span style={{ fontSize: '0.74rem', color: 'var(--text-muted)' }}>ATS Compliance</span>
+              <span className="badge badge-emerald" style={{ fontSize: '0.65rem' }}>+24%</span>
+            </div>
           </div>
         </div>
 
-        {/* Metric 3: Applications & Interviews Tracker */}
+        {/* Card 3: Tracked Applications */}
         <div 
-          className="glass-card glass-card-interactive flex-between" 
+          className="metric-stat-card glass-card-interactive"
           onClick={() => setActiveTab('internships')}
         >
-          <div>
-            <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-muted)', letterSpacing: '0.05em' }}>
-              APPLICATIONS PIPELINE
-            </div>
-            <div style={{ fontSize: '2.2rem', fontWeight: 800, color: 'var(--accent-emerald)', margin: '4px 0', fontFamily: 'var(--font-mono)' }}>
-              <span ref={countAppsRef}>{totalApplicationsCount}</span>
-            </div>
-            <div style={{ fontSize: '0.78rem', color: 'var(--accent-amber)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <Clock size={13} /> {totalInterviewsCount} {totalInterviewsCount === 1 ? 'Interview' : 'Interviews'} Scheduled
+          <div className="flex-between">
+            <Briefcase size={16} color="var(--accent-emerald)" />
+            <div className="metric-circle-badge">
+              <ArrowUpRight size={14} />
             </div>
           </div>
-          <div style={{
-            width: '52px',
-            height: '52px',
-            borderRadius: '14px',
-            background: 'var(--accent-emerald-glow)',
-            border: '1px solid rgba(16, 185, 129, 0.3)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center'
-          }}>
-            <Briefcase size={26} color="var(--accent-emerald)" />
+          <div>
+            <div style={{ fontSize: '1.9rem', fontWeight: 800, color: 'var(--text-primary)', fontFamily: 'var(--font-mono)', lineHeight: 1.1 }}>
+              <span ref={countAppsRef}>{totalApplicationsCount}</span>
+            </div>
+            <div className="flex-between" style={{ marginTop: '4px' }}>
+              <span style={{ fontSize: '0.74rem', color: 'var(--text-muted)' }}>Applications Sent</span>
+              <span className="badge badge-orange" style={{ fontSize: '0.65rem' }}>Active</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Card 4: Scheduled Interviews */}
+        <div 
+          className="metric-stat-card glass-card-interactive"
+          onClick={() => setActiveTab('invite_inbox')}
+        >
+          <div className="flex-between">
+            <Clock size={16} color="var(--accent-amber)" />
+            <div className="metric-circle-badge">
+              <ArrowUpRight size={14} />
+            </div>
+          </div>
+          <div>
+            <div style={{ fontSize: '1.9rem', fontWeight: 800, color: 'var(--text-primary)', fontFamily: 'var(--font-mono)', lineHeight: 1.1 }}>
+              <span ref={countInterviewsRef}>{totalInterviewsCount}</span>
+            </div>
+            <div className="flex-between" style={{ marginTop: '4px' }}>
+              <span style={{ fontSize: '0.74rem', color: 'var(--text-muted)' }}>Scheduled Interviews</span>
+              <span className="badge badge-amber" style={{ fontSize: '0.65rem' }}>Live</span>
+            </div>
           </div>
         </div>
 
       </div>
 
-      {/* Embedded Skill Radar Component */}
-      <div className="gsap-dash-item">
-        <SkillRadar />
+      {/* Main Visual Telemetry Row (Stream Glow Chart & Gauges) */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1.6fr 1fr', gap: '20px' }}>
+        
+        {/* LEFT: Activity Stream Glow + Regional Placement Matrix */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }} className="gsap-dash-item">
+          
+          <StreamGlowActivityChart 
+            title="Skill Matching & Generation Activity"
+            weeklyCount="2,197"
+            monthlyCount="8,903"
+          />
+
+          {/* Reference Region / Placement Compensation Matrix */}
+          <div className="glass-card" style={{ padding: '18px 20px' }}>
+            <div className="flex-between" style={{ marginBottom: '12px' }}>
+              <span style={{ fontSize: '0.88rem', fontWeight: 700 }}>Regional Placement Compensation Hubs</span>
+              <span className="badge badge-orange">Live Index</span>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              {[
+                { city: 'Bangalore Tech Corridor', median: '₹14.2 LPA', highest: '₹44.0 LPA' },
+                { city: 'Hyderabad Cyberabad', median: '₹12.8 LPA', highest: '₹38.5 LPA' },
+                { city: 'NCR (Gurugram / Noida)', median: '₹11.5 LPA', highest: '₹34.0 LPA' },
+                { city: 'Pune IT Park', median: '₹10.8 LPA', highest: '₹28.0 LPA' }
+              ].map((row, i) => (
+                <div 
+                  key={i} 
+                  className="flex-between"
+                  style={{
+                    padding: '8px 12px',
+                    background: 'var(--bg-input)',
+                    borderRadius: 'var(--radius-sm)',
+                    fontSize: '0.82rem',
+                    border: '1px solid var(--border-subtle)'
+                  }}
+                >
+                  <span style={{ color: 'var(--text-secondary)' }}>{row.city}</span>
+                  <div style={{ display: 'flex', gap: '18px' }}>
+                    <span style={{ color: 'var(--text-muted)' }}>Median: <strong style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-mono)' }}>{row.median}</strong></span>
+                    <span style={{ color: 'var(--accent-orange)', fontWeight: 700, fontFamily: 'var(--font-mono)' }}>{row.highest}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+        </div>
+
+        {/* RIGHT: Circular Telemetry Dial & Tachometer Gauge */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }} className="gsap-dash-item">
+          
+          {/* Reference Circular Load Meter */}
+          <TelemetryCompassMeter 
+            value={avgMatchScore}
+            title="Skill Alignment Telemetry"
+            unit="Overall Match"
+            metric1={{ label: "Candidate", val: currentStudent?.name?.split(' ')[0] || "Student" }}
+            metric2={{ label: "Target Role", val: currentStudent?.targetRole?.split(' ')[0] || "Eng" }}
+            metric3={{ label: "Readiness", val: `${avgMatchScore}%` }}
+          />
+
+          {/* Reference Segmented Radial Arc Tachometer */}
+          <SegmentedRadialArcMeter 
+            percentage={currentStudent?.resumeATSScore || 84}
+            label="ATS Resume Compliance Meter"
+            sublabel="Verified ATS Score"
+          />
+
+          {/* Resource Allocation Bars */}
+          <ResourceAllocationProgress 
+            items={[
+              { label: "Core Algorithms & DSA", percentage: 88 },
+              { label: "React / Frontend Systems", percentage: 80 },
+              { label: "Python & AI Models", percentage: 70 },
+              { label: "Cloud & Container DevOps", percentage: 65 }
+            ]}
+          />
+
+        </div>
+
       </div>
 
       {/* Real Application Tracking System */}
       <div className="glass-card gsap-dash-item" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
         <div className="flex-between" style={{ flexWrap: 'wrap', gap: '10px' }}>
           <div>
-            <h3 style={{ fontSize: '1.2rem', fontWeight: 700 }}>Personal Application Tracker</h3>
-            <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginTop: '2px' }}>
-              Monitor, track, and update the live hiring progression for your targeted applications.
+            <h3 style={{ fontSize: '1.1rem', fontWeight: 700 }}>Personal Application Tracker</h3>
+            <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '2px' }}>
+              Track status progression for your active external opportunities.
             </p>
           </div>
-          <span className="badge badge-indigo">
-            {studentApplications.length} Tracked {studentApplications.length === 1 ? 'Record' : 'Records'}
+          <span className="badge badge-orange">
+            {studentApplications.length} Tracked Records
           </span>
         </div>
 
         {studentApplications.length === 0 ? (
           <div style={{
             background: 'var(--bg-input)',
-            padding: '32px 24px',
-            borderRadius: 'var(--radius-lg)',
+            padding: '28px 20px',
+            borderRadius: 'var(--radius-md)',
             textAlign: 'center',
             border: '1px dashed var(--border-color)'
           }}>
-            <Briefcase size={36} color="var(--text-muted)" style={{ margin: '0 auto 12px' }} />
-            <div style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '6px' }}>No Applications Tracked Yet</div>
-            <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', maxWidth: '480px', margin: '0 auto 16px' }}>
+            <Briefcase size={32} color="var(--text-muted)" style={{ margin: '0 auto 10px' }} />
+            <div style={{ fontSize: '0.95rem', fontWeight: 700, marginBottom: '4px' }}>No Active Applications Tracked</div>
+            <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', maxWidth: '420px', margin: '0 auto 14px' }}>
               Browse verified industry opportunities, apply with your aligned profile, and track your status pipeline here!
             </p>
-            <button className="btn btn-primary btn-sm" onClick={() => setActiveTab('internships')}>
-              Explore Opportunities <ArrowUpRight size={14} />
+            <button className="btn glowing-btn-orange btn-sm" onClick={() => setActiveTab('internships')}>
+              Explore Opportunities <ArrowUpRight size={13} />
             </button>
           </div>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-            {studentApplications.map(app => {
-              const isInterview = app.status === 'Interview';
-              const isSelected = app.status === 'Selected';
-              const isRejected = app.status === 'Rejected';
-
-              return (
-                <div 
-                  key={app.id} 
-                  style={{ 
-                    background: 'var(--bg-input)', 
-                    padding: '16px 20px', 
-                    borderRadius: 'var(--radius-md)', 
-                    display: 'flex', 
-                    justifyContent: 'space-between', 
-                    alignItems: 'center',
-                    flexWrap: 'wrap',
-                    gap: '14px',
-                    border: isInterview ? '1px solid rgba(245, 158, 11, 0.4)' : isSelected ? '1px solid rgba(16, 185, 129, 0.4)' : '1px solid var(--border-subtle)',
-                    transition: 'border-color 0.2s ease, background 0.2s ease'
-                  }}
-                >
-                  <div>
-                    <div style={{ fontWeight: 700, fontSize: '0.98rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      {app.opportunityTitle}
-                      {isSelected && <span className="badge badge-emerald">Offered</span>}
-                      {isInterview && <span className="badge badge-amber">Interview Stage</span>}
-                    </div>
-                    <div style={{ fontSize: '0.82rem', color: 'var(--accent-indigo)', marginTop: '3px', fontWeight: 600 }}>
-                      {app.company} • <span style={{ color: 'var(--text-muted)', fontWeight: 400 }}>Applied via {app.source} on {app.appliedAt}</span>
-                    </div>
-                  </div>
-
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-                    {/* Status Dropdown allowing Manual Progression */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)' }}>
-                        Stage:
-                      </label>
-                      <select
-                        value={app.status}
-                        onChange={(e) => updateApplicationStatus(app.id, e.target.value)}
-                        style={{
-                          background: 'var(--bg-secondary)',
-                          color: 'var(--text-primary)',
-                          border: '1px solid var(--border-color)',
-                          borderRadius: 'var(--radius-sm)',
-                          padding: '7px 12px',
-                          fontSize: '0.82rem',
-                          fontWeight: 600,
-                          outline: 'none',
-                          cursor: 'pointer'
-                        }}
-                      >
-                        {STATUS_OPTIONS.map(opt => (
-                          <option key={opt} value={opt}>{opt}</option>
-                        ))}
-                      </select>
-                    </div>
-
-                    {app.externalUrl && (
-                      <a 
-                        href={app.externalUrl} 
-                        target="_blank" 
-                        rel="noreferrer"
-                        className="btn btn-secondary btn-sm"
-                        style={{ padding: '7px 12px' }}
-                        title="Open external job listing"
-                      >
-                        <span>Listing</span>
-                        <ExternalLink size={13} />
-                      </a>
-                    )}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            {studentApplications.map(app => (
+              <div 
+                key={app.id} 
+                style={{ 
+                  background: 'var(--bg-input)', 
+                  padding: '14px 18px', 
+                  borderRadius: 'var(--radius-md)', 
+                  display: 'flex', 
+                  justifyContent: 'space-between', 
+                  alignItems: 'center',
+                  flexWrap: 'wrap',
+                  gap: '12px',
+                  border: '1px solid var(--border-subtle)'
+                }}
+              >
+                <div>
+                  <div style={{ fontWeight: 700, fontSize: '0.92rem' }}>{app.opportunityTitle}</div>
+                  <div style={{ fontSize: '0.78rem', color: 'var(--accent-orange)', marginTop: '2px', fontWeight: 600 }}>
+                    {app.company} • <span style={{ color: 'var(--text-muted)', fontWeight: 400 }}>Applied via {app.source} on {app.appliedAt}</span>
                   </div>
                 </div>
-              );
-            })}
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <select
+                    value={app.status}
+                    onChange={(e) => updateApplicationStatus(app.id, e.target.value)}
+                    style={{
+                      background: 'var(--bg-secondary)',
+                      color: 'var(--text-primary)',
+                      border: '1px solid var(--border-color)',
+                      borderRadius: 'var(--radius-sm)',
+                      padding: '6px 10px',
+                      fontSize: '0.8rem',
+                      fontWeight: 600,
+                      outline: 'none',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    {STATUS_OPTIONS.map(opt => (
+                      <option key={opt} value={opt}>{opt}</option>
+                    ))}
+                  </select>
+
+                  {app.externalUrl && (
+                    <a 
+                      href={app.externalUrl} 
+                      target="_blank" 
+                      rel="noreferrer"
+                      className="btn btn-secondary btn-sm"
+                      style={{ padding: '6px 10px' }}
+                    >
+                      <ExternalLink size={12} />
+                    </a>
+                  )}
+                </div>
+              </div>
+            ))}
           </div>
         )}
       </div>

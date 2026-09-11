@@ -1,7 +1,7 @@
 import React, { useRef, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
 import { 
-  Sparkles, 
+  Flame, 
   Sun, 
   Moon, 
   Bot, 
@@ -9,8 +9,11 @@ import {
   Building2, 
   Briefcase, 
   Globe,
-  User,
-  ChevronDown
+  Search,
+  Download,
+  Plus,
+  ChevronDown,
+  Sparkles
 } from 'lucide-react';
 import { INITIAL_ROLES } from '../data/mockData';
 import gsap from 'gsap';
@@ -26,7 +29,9 @@ export default function Navbar() {
     setActiveStudentId, 
     isAIChatOpen, 
     setIsAIChatOpen,
-    setIsEditProfileOpen
+    setIsEditProfileOpen,
+    opportunities,
+    avgMatchScore
   } = useApp();
 
   const navRef = useRef(null);
@@ -35,8 +40,8 @@ export default function Navbar() {
     if (navRef.current) {
       gsap.fromTo(
         navRef.current,
-        { y: -16, opacity: 0 },
-        { y: 0, opacity: 1, duration: 0.5, ease: 'power2.out' }
+        { y: -12, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.4, ease: 'power2.out' }
       );
     }
   }, []);
@@ -46,204 +51,155 @@ export default function Navbar() {
       ref={navRef}
       style={{
         background: 'var(--bg-secondary)',
-        borderBottom: 'var(--glass-border)',
-        padding: '12px 28px',
+        borderBottom: '1px solid var(--border-color)',
+        padding: '10px 24px',
         position: 'sticky',
         top: 0,
         zIndex: 100,
-        backdropFilter: 'blur(20px)',
-        WebkitBackdropFilter: 'blur(20px)',
-        transition: 'background-color 0.25s ease, border-color 0.25s ease'
+        backdropFilter: 'blur(16px)',
+        WebkitBackdropFilter: 'blur(16px)'
       }}
     >
-      <div className="flex-between" style={{ gap: '20px' }}>
+      <div className="flex-between" style={{ gap: '16px', flexWrap: 'wrap' }}>
         
-        {/* Brand Logo */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+        {/* Brand Logo - Lumix AI Style */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <div style={{
-            width: '42px',
-            height: '42px',
-            borderRadius: '12px',
-            background: 'linear-gradient(135deg, var(--accent-indigo) 0%, var(--accent-cyan) 100%)',
+            width: '36px',
+            height: '36px',
+            borderRadius: '10px',
+            background: 'linear-gradient(135deg, #ff6600 0%, #ff3b30 100%)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            boxShadow: '0 4px 16px rgba(99, 102, 241, 0.35)',
-            position: 'relative'
+            boxShadow: '0 0 16px rgba(255, 85, 0, 0.45)',
+            flexShrink: 0
           }}>
-            <Sparkles size={22} color="white" />
+            <Flame size={20} color="white" />
           </div>
           <div>
-            <div style={{ fontSize: '1.25rem', fontWeight: 800, lineHeight: 1.1, fontFamily: 'var(--font-heading)' }}>
-              Edu<span className="gradient-text">Bridge AI</span>
-            </div>
-            <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', letterSpacing: '0.06em', textTransform: 'uppercase', fontWeight: 600 }}>
-              Academia • Industry Intelligence
+            <div style={{ fontSize: '1.15rem', fontWeight: 800, lineHeight: 1.1, fontFamily: 'var(--font-heading)' }}>
+              Edu<span style={{ color: 'var(--accent-orange)' }}>Bridge AI</span>
             </div>
           </div>
         </div>
 
-        {/* Stakeholder Persona Role Switcher */}
-        <nav className="role-pill" aria-label="Portal Navigation">
-          <button 
-            className={`role-tab ${role === INITIAL_ROLES.STUDENT ? 'active' : ''}`}
-            onClick={() => setRole(INITIAL_ROLES.STUDENT)}
-          >
-            <GraduationCap size={15} />
-            <span>Student Hub</span>
-          </button>
+        {/* Integrated Search Bar Pill with Dropdown */}
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          background: 'var(--bg-input)',
+          border: '1px solid var(--border-color)',
+          borderRadius: 'var(--radius-full)',
+          padding: '2px 4px 2px 12px',
+          gap: '8px',
+          minWidth: '280px',
+          maxWidth: '420px',
+          flex: 1
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.78rem', color: 'var(--text-muted)', fontWeight: 600, borderRight: '1px solid var(--border-subtle)', paddingRight: '8px', cursor: 'pointer' }}>
+            <span>All</span>
+            <ChevronDown size={12} />
+          </div>
+          <Search size={14} color="var(--text-muted)" style={{ flexShrink: 0 }} />
+          <input 
+            type="text"
+            placeholder="Search opportunities, skills, departments..."
+            style={{
+              background: 'transparent',
+              border: 'none',
+              color: 'var(--text-primary)',
+              fontSize: '0.82rem',
+              outline: 'none',
+              width: '100%',
+              padding: '6px 0'
+            }}
+          />
+        </div>
 
-          <button 
-            className={`role-tab ${role === INITIAL_ROLES.ACADEMIA ? 'active' : ''}`}
-            onClick={() => setRole(INITIAL_ROLES.ACADEMIA)}
-          >
-            <Building2 size={15} />
-            <span>Academia & TPO</span>
-          </button>
-
-          <button 
-            className={`role-tab ${role === INITIAL_ROLES.INDUSTRY ? 'active' : ''}`}
-            onClick={() => setRole(INITIAL_ROLES.INDUSTRY)}
-          >
-            <Briefcase size={15} />
-            <span>Industry Recruiter</span>
-          </button>
-
-          <button 
-            className={`role-tab ${role === INITIAL_ROLES.ADMIN ? 'active' : ''}`}
-            onClick={() => setRole(INITIAL_ROLES.ADMIN)}
-          >
-            <Globe size={15} />
-            <span>National Observatory</span>
-          </button>
-        </nav>
+        {/* Top Mini Ticker Stats */}
+        <div style={{ display: 'flex', gap: '16px', alignItems: 'center', fontSize: '0.75rem' }}>
+          <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+            <span style={{ color: 'var(--text-muted)' }}>Opportunities:</span>
+            <strong style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-mono)' }}>{opportunities.length}</strong>
+            <span style={{ color: 'var(--accent-emerald)', fontWeight: 700 }}>+12%</span>
+          </div>
+          <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+            <span style={{ color: 'var(--text-muted)' }}>Match Rate:</span>
+            <strong style={{ color: 'var(--accent-orange)', fontFamily: 'var(--font-mono)' }}>{avgMatchScore}%</strong>
+          </div>
+        </div>
 
         {/* Action Controls & User Profile Switcher */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           
-          {/* AI Skill Assistant Button */}
+          {/* Export Data Button */}
           <button 
-            className="btn btn-cyan btn-sm"
-            onClick={() => setIsAIChatOpen(!isAIChatOpen)}
-            style={{ borderRadius: 'var(--radius-full)', padding: '6px 14px' }}
-            title="Open AI Career & Skill Advisor"
+            className="btn btn-secondary btn-sm"
+            onClick={() => alert('Exporting live analytics telemetry report (JSON/CSV)...')}
+            style={{ fontSize: '0.78rem', padding: '6px 12px', borderRadius: 'var(--radius-full)' }}
           >
-            <Bot size={16} />
-            <span>AI Advisor</span>
-            <span className="pulse-dot" style={{ marginLeft: '2px' }}></span>
+            <Download size={13} />
+            <span>Export Data</span>
           </button>
 
-          {/* Theme Toggle Button */}
+          {/* AI Advisor / Action Button (Glowing Orange) */}
+          <button 
+            className="btn glowing-btn-orange btn-sm"
+            onClick={() => setIsAIChatOpen(!isAIChatOpen)}
+            style={{ borderRadius: 'var(--radius-full)', padding: '6px 14px' }}
+          >
+            <Bot size={14} />
+            <span>+ AI Advisor</span>
+          </button>
+
+          {/* Theme Toggle */}
           <button 
             onClick={toggleTheme}
             style={{
               background: 'var(--bg-input)',
               border: '1px solid var(--border-color)',
               color: 'var(--text-primary)',
-              width: '38px',
-              height: '38px',
+              width: '34px',
+              height: '34px',
               borderRadius: '50%',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               cursor: 'pointer',
-              transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)'
+              transition: 'all 0.2s ease'
             }}
-            title={theme === 'dark' ? 'Switch to Crisp Light Mode' : 'Switch to Obsidian Dark Mode'}
+            title="Toggle Light/Dark Theme"
           >
-            {theme === 'dark' ? (
-              <Sun size={18} color="#fbbf24" style={{ transition: 'transform 0.3s ease' }} />
-            ) : (
-              <Moon size={18} color="#4f46e5" style={{ transition: 'transform 0.3s ease' }} />
-            )}
+            {theme === 'dark' ? <Sun size={15} color="#fbbf24" /> : <Moon size={15} color="#ff5500" />}
           </button>
 
-          {/* Student Profile Quick Select & Edit */}
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            background: 'var(--bg-input)',
-            padding: '3px 10px 3px 6px',
-            borderRadius: 'var(--radius-full)',
-            border: '1px solid var(--border-color)'
-          }}>
-            <button
-              id="header-profile-btn"
-              onClick={() => setIsEditProfileOpen(true)}
-              title="Click to view and edit student profile"
+          {/* Student Avatar Quick Trigger */}
+          <button
+            onClick={() => setIsEditProfileOpen(true)}
+            style={{
+              background: 'none',
+              border: 'none',
+              padding: 0,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px'
+            }}
+            title="Edit Profile"
+          >
+            <img 
+              src={currentStudent?.avatar} 
+              alt={currentStudent?.name}
               style={{
-                background: 'none',
-                border: 'none',
-                padding: 0,
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                color: 'inherit',
-                textAlign: 'left'
+                width: '32px',
+                height: '32px',
+                borderRadius: '50%',
+                objectFit: 'cover',
+                border: '1.5px solid var(--accent-orange)'
               }}
-            >
-              <div style={{ position: 'relative' }}>
-                <img 
-                  src={currentStudent?.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=250'} 
-                  alt={currentStudent?.name} 
-                  style={{
-                    width: '32px',
-                    height: '32px',
-                    borderRadius: '50%',
-                    objectFit: 'cover',
-                    border: '1.5px solid var(--accent-indigo)'
-                  }} 
-                />
-                <div style={{
-                  position: 'absolute',
-                  bottom: -2,
-                  right: -2,
-                  width: '12px',
-                  height: '12px',
-                  borderRadius: '50%',
-                  background: 'var(--accent-indigo)',
-                  border: '1.5px solid var(--bg-secondary)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center'
-                }}>
-                  <span style={{ fontSize: '8px', color: '#fff', lineHeight: 1 }}>✎</span>
-                </div>
-              </div>
-              <div style={{ lineHeight: 1.15 }}>
-                <div style={{ fontSize: '0.8rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '4px' }}>
-                  {currentStudent?.name}
-                </div>
-                <div style={{ fontSize: '0.65rem', color: 'var(--accent-cyan)', fontWeight: 600 }}>
-                  {currentStudent?.targetRole}
-                </div>
-              </div>
-            </button>
-
-            <select 
-              value={currentStudent?.id}
-              onChange={(e) => setActiveStudentId(e.target.value)}
-              style={{
-                background: 'transparent',
-                border: 'none',
-                color: 'var(--text-muted)',
-                cursor: 'pointer',
-                fontSize: '0.75rem',
-                fontWeight: 600,
-                outline: 'none',
-                paddingLeft: '6px'
-              }}
-              title="Switch active student profile"
-            >
-              {students.map(s => (
-                <option key={s.id} value={s.id} style={{ background: 'var(--bg-secondary)', color: 'var(--text-primary)' }}>
-                  {s.name}
-                </option>
-              ))}
-            </select>
-          </div>
+            />
+          </button>
 
         </div>
 

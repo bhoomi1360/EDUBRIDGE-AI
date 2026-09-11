@@ -65,17 +65,18 @@ export default function AIChatModal() {
       {/* Header */}
       <div className="flex-between" style={{
         padding: '16px 20px',
-        background: 'linear-gradient(135deg, var(--accent-indigo) 0%, var(--accent-cyan) 100%)',
+        background: 'linear-gradient(135deg, #121319 0%, #1a1b24 100%)',
+        borderBottom: '1px solid rgba(255, 85, 0, 0.25)',
         color: 'white'
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <div style={{ background: 'rgba(255, 255, 255, 0.22)', padding: '7px', borderRadius: '10px', display: 'flex' }}>
-            <Bot size={20} color="white" />
+          <div style={{ background: 'rgba(255, 85, 0, 0.15)', border: '1px solid rgba(255, 85, 0, 0.4)', padding: '7px', borderRadius: '10px', display: 'flex' }}>
+            <Bot size={20} color="#ff5500" />
           </div>
           <div>
             <div style={{ fontWeight: 700, fontSize: '0.98rem', lineHeight: 1.2 }}>EduBridge AI Career Advisor</div>
-            <div style={{ fontSize: '0.72rem', opacity: 0.92, display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <span className="pulse-dot" style={{ background: '#34d399', width: '6px', height: '6px' }}></span>
+            <div style={{ fontSize: '0.72rem', opacity: 0.92, display: 'flex', alignItems: 'center', gap: '4px', color: 'var(--text-secondary)' }}>
+              <span className="pulse-dot" style={{ background: '#ff5500', width: '6px', height: '6px' }}></span>
               Online • Realtime Skill Guidance
             </div>
           </div>
@@ -83,7 +84,7 @@ export default function AIChatModal() {
 
         <button 
           onClick={() => setIsAIChatOpen(false)}
-          style={{ background: 'transparent', border: 'none', color: 'white', cursor: 'pointer', padding: '4px' }}
+          style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', padding: '4px' }}
           title="Close advisor"
         >
           <X size={19} />
@@ -116,31 +117,31 @@ export default function AIChatModal() {
                   width: '30px',
                   height: '30px',
                   borderRadius: '50%',
-                  background: 'var(--accent-indigo-glow)',
-                  border: '1px solid rgba(99, 102, 241, 0.4)',
+                  background: 'rgba(255, 85, 0, 0.15)',
+                  border: '1px solid rgba(255, 85, 0, 0.35)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   flexShrink: 0,
                   marginTop: '2px'
                 }}>
-                  <Bot size={15} color="var(--accent-indigo)" />
+                  <Bot size={15} color="var(--accent-orange)" />
                 </div>
               )}
 
               <div style={{
-                background: isAI ? 'var(--bg-input)' : 'linear-gradient(135deg, var(--accent-indigo) 0%, #4f46e5 100%)',
-                color: isAI ? 'var(--text-primary)' : 'white',
+                background: isAI ? 'var(--bg-input)' : 'linear-gradient(135deg, var(--accent-orange) 0%, var(--accent-crimson) 100%)',
+                color: 'white',
                 padding: '11px 15px',
                 borderRadius: isAI ? '4px 16px 16px 16px' : '16px 4px 16px 16px',
                 fontSize: '0.86rem',
                 lineHeight: 1.5,
                 border: isAI ? '1px solid var(--border-subtle)' : 'none',
-                boxShadow: isAI ? '0 2px 8px rgba(0,0,0,0.15)' : '0 4px 12px rgba(99,102,241,0.3)',
+                boxShadow: isAI ? '0 2px 8px rgba(0,0,0,0.15)' : '0 4px 12px rgba(255,85,0,0.35)',
                 whiteSpace: 'pre-line'
               }}>
                 {msg.text}
-                <div style={{ fontSize: '0.65rem', opacity: 0.65, marginTop: '5px', textAlign: 'right', fontFamily: 'var(--font-mono)' }}>
+                <div style={{ fontSize: '0.65rem', opacity: 0.75, marginTop: '5px', textAlign: 'right', fontFamily: 'var(--font-mono)' }}>
                   {msg.timestamp}
                 </div>
               </div>
@@ -167,7 +168,7 @@ export default function AIChatModal() {
               padding: '5px 11px',
               borderRadius: 'var(--radius-full)',
               background: 'var(--bg-input)',
-              color: 'var(--accent-cyan)',
+              color: 'var(--accent-orange)',
               border: '1px solid var(--border-color)',
               cursor: 'pointer',
               transition: 'all 0.15s ease'

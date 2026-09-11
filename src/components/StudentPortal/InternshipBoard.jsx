@@ -228,7 +228,7 @@ export default function InternshipBoard() {
                   display: 'flex', 
                   flexDirection: 'column', 
                   gap: '16px',
-                  borderLeft: opp.isDemo ? '4px solid var(--accent-amber)' : '4px solid var(--accent-indigo)'
+                  borderLeft: opp.isDemo ? '4px solid var(--accent-orange)' : '4px solid var(--accent-crimson)'
                 }}
               >
                 <div className="flex-between" style={{ gap: '20px', flexWrap: 'wrap' }}>
@@ -254,11 +254,11 @@ export default function InternshipBoard() {
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                         <h3 style={{ fontSize: '1.18rem', fontWeight: 700 }}>{opp.title}</h3>
 
-                        <span className={`badge ${opp.type === 'JOB' ? 'badge-indigo' : opp.type === 'INTERNSHIP' ? 'badge-cyan' : 'badge-amber'}`}>
+                        <span className={`badge ${opp.type === 'JOB' ? 'badge-orange' : opp.type === 'INTERNSHIP' ? 'badge-cyan' : 'badge-amber'}`}>
                           {opp.type}
                         </span>
 
-                        <span className="badge badge-indigo" style={{ background: 'var(--bg-input)', color: 'var(--text-secondary)', border: '1px solid var(--border-color)' }}>
+                        <span className="badge badge-orange" style={{ background: 'var(--bg-input)', color: 'var(--text-secondary)', border: '1px solid var(--border-color)' }}>
                           {opp.workMode}
                         </span>
 

@@ -1,30 +1,32 @@
-import React, { useRef, useEffect } from 'react';
+import React from 'react';
 import { useApp } from '../context/AppContext';
 import { INITIAL_ROLES } from '../data/mockData';
-import { 
-  LayoutDashboard, 
-  Target, 
-  FileCheck2, 
-  Briefcase, 
-  BookOpen, 
-  Building2, 
-  FileText, 
-  Users, 
-  Trophy, 
-  Globe2, 
-  PlusCircle, 
-  TrendingUp, 
+import {
+  LayoutDashboard,
+  Target,
+  FileCheck2,
+  Briefcase,
+  BookOpen,
+  Building2,
+  FileText,
+  Users,
+  Trophy,
+  Globe2,
+  PlusCircle,
+  TrendingUp,
   Bell,
   Sparkles,
-  Zap
+  Bot,
+  Flame,
+  Zap,
+  Layers,
+  FolderPlus,
+  GraduationCap
 } from 'lucide-react';
-import gsap from 'gsap';
 
 export default function Sidebar({ activeTab, setActiveTab }) {
-  const { role, currentStudent, interviewInvites } = useApp();
-  const sidebarRef = useRef(null);
+  const { role, setRole, currentStudent, interviewInvites, setIsAIChatOpen, isAIChatOpen, setIsEditProfileOpen } = useApp();
 
-  // Count unread invites for current student
   const unreadInvites = (interviewInvites || []).filter(
     inv => inv.studentId === currentStudent?.id && !inv.read
   ).length;
@@ -33,25 +35,25 @@ export default function Sidebar({ activeTab, setActiveTab }) {
     switch (role) {
       case INITIAL_ROLES.STUDENT:
         return [
-          { id: 'dashboard',   label: 'Overview & Stats',        icon: LayoutDashboard },
-          { id: 'skill_radar', label: 'AI Skill Gap Radar',       icon: Target },
-          { id: 'resume_analyzer', label: 'ATS Resume Parser',    icon: FileCheck2 },
-          { id: 'internships', label: 'Internships & Placements',  icon: Briefcase },
-          { id: 'upskilling',  label: 'Curated Upskilling Path',  icon: BookOpen },
-          { id: 'invite_inbox', label: 'Interview Invites',        icon: Bell, badge: unreadInvites }
+          { id: 'dashboard', label: 'Overview & Stats', icon: LayoutDashboard },
+          { id: 'skill_radar', label: 'AI Skill Gap Radar', icon: Target },
+          { id: 'resume_analyzer', label: 'ATS Resume Parser', icon: FileCheck2 },
+          { id: 'internships', label: 'Internships & Jobs', icon: Briefcase },
+          { id: 'upskilling', label: 'Upskilling Roadmap', icon: BookOpen },
+          { id: 'invite_inbox', label: 'Interview Invites', icon: Bell, badge: unreadInvites }
         ];
 
       case INITIAL_ROLES.ACADEMIA:
         return [
           { id: 'academia_dash', label: 'TPO Placement Hub', icon: Building2 },
           { id: 'curriculum_harmonizer', label: 'Curriculum Harmonizer', icon: FileText },
-          { id: 'placement_drives', label: 'Placement Drives & MoUs', icon: TrendingUp }
+          { id: 'placement_drives', label: 'Placement Drives', icon: TrendingUp }
         ];
 
       case INITIAL_ROLES.INDUSTRY:
         return [
-          { id: 'industry_dash', label: 'Recruiter Command Hub', icon: LayoutDashboard },
-          { id: 'talent_search', label: 'Skill Talent Explorer', icon: Users },
+          { id: 'industry_dash', label: 'Recruiter Hub', icon: LayoutDashboard },
+          { id: 'talent_search', label: 'Talent Explorer', icon: Users },
           { id: 'post_job', label: 'Post New Opening', icon: PlusCircle },
           { id: 'challenges', label: 'Corporate Challenges', icon: Trophy }
         ];
@@ -68,115 +70,165 @@ export default function Sidebar({ activeTab, setActiveTab }) {
 
   const navItems = getNavItems();
 
-  useEffect(() => {
-    if (sidebarRef.current) {
-      const buttons = sidebarRef.current.querySelectorAll('.sidebar-nav-btn');
-      gsap.fromTo(
-        buttons,
-        { opacity: 0, x: -14 },
-        { opacity: 1, x: 0, duration: 0.35, stagger: 0.05, ease: 'power2.out' }
-      );
-    }
-  }, [role]);
+  const portalRoles = [
+    { id: INITIAL_ROLES.STUDENT, label: 'Student Hub', icon: GraduationCap },
+    { id: INITIAL_ROLES.ACADEMIA, label: 'Academia & TPO', icon: Building2 },
+    { id: INITIAL_ROLES.INDUSTRY, label: 'Industry Recruiter', icon: Briefcase },
+    { id: INITIAL_ROLES.ADMIN, label: 'National Observatory', icon: Globe2 }
+  ];
 
   return (
-    <aside 
-      ref={sidebarRef}
+    <aside
       style={{
-        width: '260px',
+        width: '250px',
         background: 'var(--bg-secondary)',
-        borderRight: 'var(--glass-border)',
-        padding: '24px 16px',
+        borderRight: '1px solid var(--border-color)',
+        padding: '20px 14px',
         display: 'flex',
         flexDirection: 'column',
-        gap: '6px',
+        gap: '18px',
         flexShrink: 0,
-        transition: 'background-color 0.25s ease, border-color 0.25s ease'
+        overflowY: 'auto',
+        position: 'sticky',
+        top: 0,
+        height: '100vh',
+        alignSelf: 'flex-start'
       }}
     >
-      <div style={{
-        fontSize: '0.72rem',
-        fontWeight: 700,
-        color: 'var(--text-muted)',
-        textTransform: 'uppercase',
-        letterSpacing: '0.06em',
-        paddingLeft: '12px',
-        marginBottom: '10px'
-      }}>
-        WORKSPACE MENU
+      {/* Reference Top Highlighted Action Button */}
+      <button
+        className="sidebar-action-highlight"
+        onClick={() => setIsAIChatOpen(!isAIChatOpen)}
+      >
+        <Bot size={18} color="#ff5500" />
+        <span>+ AI Advisor Chat</span>
+      </button>
+
+      {/* Features Section */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+        <div style={{
+          fontSize: '0.7rem',
+          fontWeight: 700,
+          color: 'var(--text-muted)',
+          textTransform: 'uppercase',
+          letterSpacing: '0.06em',
+          paddingLeft: '10px',
+          marginBottom: '4px'
+        }}>
+          Features
+        </div>
+
+        {navItems.map((item) => {
+          const Icon = item.icon;
+          const isActive = activeTab === item.id;
+          return (
+            <button
+              key={item.id}
+              onClick={() => setActiveTab(item.id)}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px',
+                padding: '9px 12px',
+                borderRadius: 'var(--radius-sm)',
+                fontSize: '0.84rem',
+                fontWeight: isActive ? 700 : 500,
+                color: isActive ? '#ffffff' : 'var(--text-secondary)',
+                background: isActive ? '#1b1c26' : 'transparent',
+                border: isActive ? '1px solid rgba(255, 85, 0, 0.35)' : '1px solid transparent',
+                cursor: 'pointer',
+                textAlign: 'left',
+                transition: 'all 0.15s ease',
+                position: 'relative'
+              }}
+            >
+              <Icon size={16} color={isActive ? 'var(--accent-orange)' : 'var(--text-muted)'} />
+              <span style={{ flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                {item.label}
+              </span>
+              {item.badge > 0 && (
+                <span style={{
+                  background: 'var(--accent-orange)',
+                  color: '#ffffff',
+                  fontSize: '0.62rem',
+                  fontWeight: 800,
+                  padding: '1px 6px',
+                  borderRadius: 'var(--radius-full)',
+                  minWidth: '16px',
+                  textAlign: 'center'
+                }}>
+                  {item.badge}
+                </span>
+              )}
+            </button>
+          );
+        })}
       </div>
 
-      {navItems.map((item) => {
-        const Icon = item.icon;
-        const isActive = activeTab === item.id;
-        return (
-          <button
-            key={item.id}
-            className="sidebar-nav-btn"
-            onClick={() => setActiveTab(item.id)}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '12px',
-              padding: '11px 15px',
-              borderRadius: 'var(--radius-md)',
-              fontSize: '0.88rem',
-              fontWeight: isActive ? 700 : 500,
-              color: isActive ? '#ffffff' : 'var(--text-secondary)',
-              background: isActive ? 'linear-gradient(135deg, var(--accent-indigo) 0%, #4f46e5 100%)' : 'transparent',
-              border: 'none',
-              cursor: 'pointer',
-              textAlign: 'left',
-              transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
-              boxShadow: isActive ? '0 4px 14px rgba(99, 102, 241, 0.35)' : 'none',
-              position: 'relative'
-            }}
-          >
-            <Icon size={18} color={isActive ? '#ffffff' : 'var(--text-muted)'} />
-            <span style={{ flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-              {item.label}
-            </span>
-            {item.badge > 0 && (
-              <span style={{
-                background: 'var(--accent-amber)',
-                color: '#000000',
-                fontSize: '0.65rem',
-                fontWeight: 800,
-                padding: '1px 7px',
-                borderRadius: 'var(--radius-full)',
-                lineHeight: '1.4',
-                minWidth: '18px',
-                textAlign: 'center'
-              }}>
-                {item.badge}
-              </span>
-            )}
-          </button>
-        );
-      })}
+      {/* Workspaces (Stakeholder Portals) */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+        <div style={{
+          fontSize: '0.7rem',
+          fontWeight: 700,
+          color: 'var(--text-muted)',
+          textTransform: 'uppercase',
+          letterSpacing: '0.06em',
+          paddingLeft: '10px',
+          marginBottom: '4px'
+        }}>
+          Workspaces
+        </div>
 
-      {/* Persona Context Card */}
-      <div style={{ marginTop: 'auto', paddingTop: '20px' }}>
-        <div 
-          className="glass-card glass-card-sm" 
-          style={{ 
-            background: 'var(--bg-input)', 
-            border: '1px solid var(--border-color)',
-            padding: '14px'
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
-            <Zap size={14} color="var(--accent-cyan)" />
-            <span style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-muted)', letterSpacing: '0.05em' }}>
-              ACTIVE PORTAL
-            </span>
+        {portalRoles.map((p) => {
+          const Icon = p.icon;
+          const isCurrent = role === p.id;
+          return (
+            <button
+              key={p.id}
+              onClick={() => setRole(p.id)}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px',
+                padding: '8px 12px',
+                borderRadius: 'var(--radius-sm)',
+                fontSize: '0.82rem',
+                fontWeight: isCurrent ? 700 : 500,
+                color: isCurrent ? 'var(--accent-orange)' : 'var(--text-muted)',
+                background: isCurrent ? 'rgba(255, 85, 0, 0.08)' : 'transparent',
+                border: 'none',
+                cursor: 'pointer',
+                textAlign: 'left',
+                transition: 'all 0.15s ease'
+              }}
+            >
+              <Icon size={15} color={isCurrent ? 'var(--accent-orange)' : 'var(--text-muted)'} />
+              <span style={{ flex: 1 }}>{p.label}</span>
+              {isCurrent && <span className="pulse-dot" style={{ width: '5px', height: '5px' }}></span>}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Bottom Reference Illuminated Card */}
+      <div style={{ marginTop: 'auto', paddingTop: '10px' }}>
+        <div className="sidebar-promo-card">
+          <div className="sidebar-promo-gem">
+            <Flame size={24} color="#ff5500" />
           </div>
-          <div style={{ fontSize: '0.88rem', fontWeight: 700, textTransform: 'capitalize' }} className="gradient-text">
-            {role} Workspace
+          <div style={{ fontSize: '0.88rem', fontWeight: 800, color: 'var(--text-primary)' }}>
+            EduBridge AI
           </div>
-          <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '4px', lineHeight: 1.4 }}>
-            Switch roles anytime via the top header bar.
-          </div>
+          <p style={{ fontSize: '0.72rem', color: 'var(--text-muted)', lineHeight: 1.4, margin: 0 }}>
+            Active Student: <strong style={{ color: 'var(--text-secondary)' }}>{currentStudent.name}</strong>
+          </p>
+          <button
+            className="btn btn-secondary btn-sm"
+            onClick={() => setIsEditProfileOpen(true)}
+            style={{ width: '100%', fontSize: '0.76rem', padding: '6px 12px', borderRadius: 'var(--radius-sm)' }}
+          >
+            Edit Profile
+          </button>
         </div>
       </div>
     </aside>

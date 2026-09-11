@@ -45,7 +45,7 @@ export default function InterviewInvites() {
       {/* Header Banner */}
       <div className="glass-card flex-between gsap-invite-card" style={{ gap: '20px', flexWrap: 'wrap' }}>
         <div>
-          <span className="badge badge-indigo" style={{ marginBottom: '8px' }}>
+          <span className="badge badge-orange" style={{ marginBottom: '8px' }}>
             <Bell size={12} /> Direct Recruiter Pipeline
           </span>
           <h2 style={{ fontSize: '1.7rem', fontWeight: 800 }}>
@@ -59,7 +59,7 @@ export default function InterviewInvites() {
         {/* Stats */}
         <div style={{ display: 'flex', gap: '14px', flexWrap: 'wrap' }}>
           <div className="glass-card glass-card-sm" style={{ textAlign: 'center', background: 'var(--bg-input)', minWidth: '95px' }}>
-            <div style={{ fontSize: '1.7rem', fontWeight: 800, color: 'var(--accent-indigo)', fontFamily: 'var(--font-mono)' }}>{myInvites.length}</div>
+            <div style={{ fontSize: '1.7rem', fontWeight: 800, color: 'var(--accent-orange)', fontFamily: 'var(--font-mono)' }}>{myInvites.length}</div>
             <div style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-muted)' }}>TOTAL</div>
           </div>
           <div className="glass-card glass-card-sm" style={{ textAlign: 'center', background: 'var(--bg-input)', minWidth: '95px' }}>
