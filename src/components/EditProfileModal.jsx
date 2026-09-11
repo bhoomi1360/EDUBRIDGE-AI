@@ -12,6 +12,7 @@ import {
   Link,
   GraduationCap
 } from 'lucide-react';
+import gsap from 'gsap';
 
 const COMMON_TARGET_ROLES = [
   'Full Stack AI Engineer',
@@ -20,10 +21,9 @@ const COMMON_TARGET_ROLES = [
   'DevOps & Cloud Architect',
   'Frontend Architect',
   'Backend & Distributed Systems Engineer',
-  'Cybersecurity & Cloud Security Analyst'
+  'Cybersecurity Analyst'
 ];
 
-// Curated set of diverse Unsplash avatar photos students can choose
 const AVATAR_PRESETS = [
   'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=250',
   'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&q=80&w=250',
@@ -55,7 +55,18 @@ export default function EditProfileModal() {
   const [avatarUrlError, setAvatarUrlError] = useState('');
   const [saveSuccess, setSaveSuccess] = useState(false);
 
-  // Sync form inputs with currentStudent when modal opens or active student changes
+  const modalRef = useRef(null);
+
+  useEffect(() => {
+    if (isEditProfileOpen && modalRef.current) {
+      gsap.fromTo(
+        modalRef.current,
+        { opacity: 0, scale: 0.94, y: 16 },
+        { opacity: 1, scale: 1, y: 0, duration: 0.3, ease: 'back.out(1.3)' }
+      );
+    }
+  }, [isEditProfileOpen]);
+
   useEffect(() => {
     if (currentStudent) {
       setName(currentStudent.name || '');
@@ -91,7 +102,7 @@ export default function EditProfileModal() {
     setTimeout(() => {
       setSaveSuccess(false);
       setIsEditProfileOpen(false);
-    }, 700);
+    }, 600);
   };
 
   const handleCustomUrlApply = () => {
@@ -112,7 +123,7 @@ export default function EditProfileModal() {
     background: 'var(--bg-input)',
     border: '1px solid var(--border-color)',
     borderRadius: 'var(--radius-sm)',
-    padding: '10px 12px 10px 38px',
+    padding: '10px 14px 10px 38px',
     color: 'var(--text-primary)',
     fontSize: '0.9rem',
     outline: 'none'
@@ -120,45 +131,25 @@ export default function EditProfileModal() {
 
   return (
     <div 
-      style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        backgroundColor: 'rgba(0, 0, 0, 0.75)',
-        backdropFilter: 'blur(8px)',
-        zIndex: 1000,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '16px',
-        animation: 'fadeIn 0.2s ease-out'
-      }}
+      className="modal-overlay"
       onClick={(e) => {
         if (e.target === e.currentTarget) setIsEditProfileOpen(false);
       }}
     >
       <div 
+        ref={modalRef}
+        className="modal-content"
         style={{
-          width: '100%',
-          maxWidth: '540px',
-          maxHeight: '90vh',
-          display: 'flex',
-          flexDirection: 'column',
-          background: 'var(--bg-secondary)',
-          border: '1px solid var(--border-color)',
-          borderRadius: 'var(--radius-lg)',
-          boxShadow: '0 20px 40px rgba(0,0,0,0.5)',
-          overflow: 'hidden',
-          position: 'relative'
+          maxWidth: '560px',
+          padding: 0,
+          overflow: 'hidden'
         }}
       >
-        {/* ── Fixed Header ── */}
+        {/* Fixed Header */}
         <div 
           className="flex-between"
           style={{
-            padding: '16px 22px',
+            padding: '18px 24px',
             borderBottom: '1px solid var(--border-color)',
             background: 'var(--bg-card)',
             flexShrink: 0
@@ -166,19 +157,20 @@ export default function EditProfileModal() {
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <div style={{
-              width: '36px',
-              height: '36px',
-              borderRadius: '50%',
+              width: '38px',
+              height: '38px',
+              borderRadius: '10px',
               background: 'linear-gradient(135deg, var(--accent-indigo), var(--accent-cyan))',
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'center'
+              justifyContent: 'center',
+              boxShadow: '0 4px 12px rgba(99,102,241,0.3)'
             }}>
               <User size={18} color="#fff" />
             </div>
             <div>
-              <h3 style={{ fontSize: '1.1rem', fontWeight: 800 }}>Edit Student Profile</h3>
-              <p style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
+              <h3 style={{ fontSize: '1.15rem', fontWeight: 800 }}>Edit Student Profile</h3>
+              <p style={{ fontSize: '0.74rem', color: 'var(--text-muted)' }}>
                 {currentStudent.university} • {currentStudent.department}
               </p>
             </div>
@@ -191,10 +183,7 @@ export default function EditProfileModal() {
               border: 'none',
               color: 'var(--text-muted)',
               cursor: 'pointer',
-              padding: '6px',
-              borderRadius: 'var(--radius-sm)',
-              display: 'flex',
-              alignItems: 'center'
+              padding: '6px'
             }}
             title="Close"
           >
@@ -202,19 +191,19 @@ export default function EditProfileModal() {
           </button>
         </div>
 
-        {/* ── Scrollable Form Body ── */}
+        {/* Scrollable Form Body */}
         <form 
           onSubmit={handleSubmit} 
           style={{ 
-            padding: '20px 22px', 
+            padding: '22px 24px', 
             display: 'flex', 
             flexDirection: 'column', 
             gap: '16px',
             overflowY: 'auto',
-            flex: 1
+            maxHeight: 'calc(90vh - 140px)'
           }}
         >
-          {/* ── Profile Image Section ── */}
+          {/* Profile Image Section */}
           <div style={{
             background: 'var(--bg-input)',
             padding: '16px',
@@ -222,15 +211,14 @@ export default function EditProfileModal() {
             border: '1px solid var(--border-color)'
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: showAvatarPicker ? '14px' : 0 }}>
-              {/* Live avatar preview */}
               <div style={{ position: 'relative', flexShrink: 0 }}>
                 <img 
                   src={avatar} 
                   alt={name}
                   onError={(e) => { e.target.src = AVATAR_PRESETS[0]; }}
                   style={{ 
-                    width: '62px', 
-                    height: '62px', 
+                    width: '64px', 
+                    height: '64px', 
                     borderRadius: '50%', 
                     objectFit: 'cover', 
                     border: '2px solid var(--accent-indigo)',
@@ -244,8 +232,8 @@ export default function EditProfileModal() {
                     position: 'absolute',
                     bottom: -2,
                     right: -2,
-                    width: '22px',
-                    height: '22px',
+                    width: '24px',
+                    height: '24px',
                     borderRadius: '50%',
                     background: 'var(--accent-indigo)',
                     border: '2px solid var(--bg-secondary)',
@@ -257,42 +245,40 @@ export default function EditProfileModal() {
                   }}
                   title="Change profile photo"
                 >
-                  <Camera size={11} color="#fff" />
+                  <Camera size={12} color="#fff" />
                 </button>
               </div>
 
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: '0.85rem', fontWeight: 700, marginBottom: '2px' }}>
+                <div style={{ fontSize: '0.92rem', fontWeight: 700, marginBottom: '2px' }}>
                   {name || 'Student Name'}
                 </div>
-                <div style={{ fontSize: '0.72rem', color: 'var(--accent-cyan)', marginBottom: '1px' }}>
-                  Target Role: <strong>{targetRole || 'Not Set'}</strong>
+                <div style={{ fontSize: '0.74rem', color: 'var(--accent-cyan)', marginBottom: '2px', fontWeight: 600 }}>
+                  Target Role: {targetRole || 'Not Set'}
                 </div>
                 {university && (
-                  <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '3px' }}>
-                    <GraduationCap size={10} /> {university}
+                  <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <GraduationCap size={12} /> {university}
                   </div>
                 )}
-                {!university && <div style={{ marginBottom: '8px' }} />}
                 <button
                   type="button"
                   onClick={() => { setShowAvatarPicker(!showAvatarPicker); setShowUrlInput(false); }}
                   className="btn btn-secondary btn-sm"
-                  style={{ fontSize: '0.72rem', padding: '4px 10px', display: 'flex', alignItems: 'center', gap: '5px' }}
+                  style={{ fontSize: '0.75rem', padding: '4px 10px', display: 'inline-flex', alignItems: 'center', gap: '5px' }}
                 >
                   <Camera size={12} /> Change Photo
                 </button>
               </div>
             </div>
 
-            {/* ── Avatar Picker Panel ── */}
+            {/* Avatar Picker Panel */}
             {showAvatarPicker && (
-              <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '12px' }}>
+              <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '12px', marginTop: '12px' }}>
                 <div style={{ fontSize: '0.76rem', fontWeight: 700, color: 'var(--text-secondary)', marginBottom: '8px' }}>
-                  Choose a profile photo:
+                  Choose preset portrait:
                 </div>
 
-                {/* Preset grid */}
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', marginBottom: '10px' }}>
                   {AVATAR_PRESETS.map((url, idx) => (
                     <button
@@ -311,21 +297,19 @@ export default function EditProfileModal() {
                       <img
                         src={url}
                         alt={`Avatar option ${idx + 1}`}
-                        style={{ width: '44px', height: '44px', borderRadius: '50%', objectFit: 'cover', display: 'block' }}
-                        onError={(e) => { e.target.style.display = 'none'; }}
+                        style={{ width: '46px', height: '46px', borderRadius: '50%', objectFit: 'cover', display: 'block' }}
                       />
                     </button>
                   ))}
                 </div>
 
-                {/* Custom URL */}
                 <div>
                   <button
                     type="button"
                     onClick={() => setShowUrlInput(!showUrlInput)}
-                    style={{ fontSize: '0.72rem', background: 'none', border: 'none', color: 'var(--accent-indigo)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', padding: 0 }}
+                    style={{ fontSize: '0.74rem', background: 'none', border: 'none', color: 'var(--accent-indigo)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', padding: 0 }}
                   >
-                    <Link size={11} /> Use custom image URL
+                    <Link size={12} /> Use custom image URL
                   </button>
 
                   {showUrlInput && (
@@ -340,9 +324,9 @@ export default function EditProfileModal() {
                           background: 'var(--bg-secondary)',
                           border: `1px solid ${avatarUrlError ? 'var(--accent-rose)' : 'var(--border-color)'}`,
                           borderRadius: 'var(--radius-sm)',
-                          padding: '7px 10px',
+                          padding: '7px 12px',
                           color: 'var(--text-primary)',
-                          fontSize: '0.78rem',
+                          fontSize: '0.8rem',
                           outline: 'none'
                         }}
                       />
@@ -366,13 +350,13 @@ export default function EditProfileModal() {
             )}
           </div>
 
-          {/* ── Name Field ── */}
+          {/* Name Field */}
           <div>
             <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, marginBottom: '6px', color: 'var(--text-secondary)' }}>
               Full Name
             </label>
             <div style={{ position: 'relative' }}>
-              <User size={15} color="var(--text-muted)" style={{ position: 'absolute', left: '11px', top: '50%', transform: 'translateY(-50%)' }} />
+              <User size={15} color="var(--text-muted)" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
               <input 
                 id="edit-profile-name"
                 type="text"
@@ -385,13 +369,13 @@ export default function EditProfileModal() {
             </div>
           </div>
 
-          {/* ── Email Field ── */}
+          {/* Email Field */}
           <div>
             <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, marginBottom: '6px', color: 'var(--text-secondary)' }}>
               Email Address
             </label>
             <div style={{ position: 'relative' }}>
-              <Mail size={15} color="var(--text-muted)" style={{ position: 'absolute', left: '11px', top: '50%', transform: 'translateY(-50%)' }} />
+              <Mail size={15} color="var(--text-muted)" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
               <input 
                 id="edit-profile-email"
                 type="email"
@@ -404,13 +388,13 @@ export default function EditProfileModal() {
             </div>
           </div>
 
-          {/* ── Phone Number Field ── */}
+          {/* Phone Number Field */}
           <div>
             <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, marginBottom: '6px', color: 'var(--text-secondary)' }}>
               Phone Number
             </label>
             <div style={{ position: 'relative' }}>
-              <Phone size={15} color="var(--text-muted)" style={{ position: 'absolute', left: '11px', top: '50%', transform: 'translateY(-50%)' }} />
+              <Phone size={15} color="var(--text-muted)" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
               <input 
                 id="edit-profile-phone"
                 type="tel"
@@ -422,13 +406,13 @@ export default function EditProfileModal() {
             </div>
           </div>
 
-          {/* ── College / University Field ── */}
+          {/* College / University Field */}
           <div>
             <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, marginBottom: '6px', color: 'var(--text-secondary)' }}>
               College / University Name
             </label>
             <div style={{ position: 'relative' }}>
-              <GraduationCap size={15} color="var(--text-muted)" style={{ position: 'absolute', left: '11px', top: '50%', transform: 'translateY(-50%)' }} />
+              <GraduationCap size={15} color="var(--text-muted)" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
               <input 
                 id="edit-profile-university"
                 type="text"
@@ -440,18 +424,18 @@ export default function EditProfileModal() {
             </div>
           </div>
 
-          {/* ── Target Role Field ── */}
+          {/* Target Role Field */}
           <div>
             <div className="flex-between" style={{ marginBottom: '6px' }}>
               <label style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-secondary)' }}>
                 Target Career Role
               </label>
-              <span style={{ fontSize: '0.68rem', color: 'var(--accent-indigo)' }}>
-                Updates Roadmap & Skill Radar
+              <span style={{ fontSize: '0.7rem', color: 'var(--accent-indigo)' }}>
+                Syncs Roadmap &amp; Skill Radar
               </span>
             </div>
             <div style={{ position: 'relative' }}>
-              <Target size={15} color="var(--text-muted)" style={{ position: 'absolute', left: '11px', top: '50%', transform: 'translateY(-50%)' }} />
+              <Target size={15} color="var(--text-muted)" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
               <input 
                 id="edit-profile-target-role"
                 type="text"
@@ -471,8 +455,8 @@ export default function EditProfileModal() {
                   key={roleOpt}
                   onClick={() => setTargetRole(roleOpt)}
                   style={{
-                    fontSize: '0.7rem',
-                    padding: '4px 9px',
+                    fontSize: '0.72rem',
+                    padding: '4px 10px',
                     borderRadius: 'var(--radius-sm)',
                     background: targetRole === roleOpt ? 'var(--accent-indigo)' : 'var(--bg-input)',
                     color: targetRole === roleOpt ? '#fff' : 'var(--text-secondary)',
@@ -487,7 +471,7 @@ export default function EditProfileModal() {
             </div>
           </div>
 
-          {/* ── Success Banner ── */}
+          {/* Success Banner */}
           {saveSuccess && (
             <div style={{
               background: 'rgba(16, 185, 129, 0.15)',
@@ -505,12 +489,12 @@ export default function EditProfileModal() {
           )}
         </form>
 
-        {/* ── Fixed Footer Buttons ── */}
+        {/* Fixed Footer Buttons */}
         <div style={{ 
           display: 'flex', 
           justifyContent: 'flex-end', 
           gap: '12px', 
-          padding: '14px 22px',
+          padding: '14px 24px',
           borderTop: '1px solid var(--border-color)',
           background: 'var(--bg-card)',
           flexShrink: 0
@@ -524,10 +508,9 @@ export default function EditProfileModal() {
           </button>
           <button 
             id="save-profile-btn"
-            type="submit"
+            type="button"
             className="btn btn-primary"
             style={{ minWidth: '130px' }}
-            form="edit-profile-form"
             onClick={handleSubmit}
           >
             <Save size={16} /> Save Profile

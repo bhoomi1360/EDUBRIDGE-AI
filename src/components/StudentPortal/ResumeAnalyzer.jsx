@@ -5,8 +5,9 @@ import * as pdfjsLib from 'pdfjs-dist';
 import pdfWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
 import { 
   FileCheck2, Sparkles, CheckCircle, AlertTriangle, ArrowRight, 
-  Upload, FileText, X, Briefcase, ExternalLink, RefreshCw, AlertCircle, Loader2
+  Upload, FileText, X, Briefcase, ExternalLink, RefreshCw, AlertCircle, Loader2 
 } from 'lucide-react';
+import { useGsapStagger } from '../../utils/animations';
 
 // Configure PDF.js worker
 try {
@@ -33,7 +34,6 @@ const TRENDING_MISSING = [
 // ── Sanitize text to prevent regex / perf issues ────────────────
 function sanitizeText(rawText) {
   if (typeof rawText !== 'string') return '';
-  // Limit to reasonable max length (100k chars) and clean non-printable control chars
   return rawText
     .slice(0, 100000)
     .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, ' ')
@@ -46,7 +46,6 @@ function analyzeResumeText(text, targetRole = 'Software Engineer') {
   const sanitized = sanitizeText(text);
   const lower = sanitized.toLowerCase();
 
-  // Detected skill categories
   const detectedSkills = [];
   for (const [category, keywords] of Object.entries(SKILL_KEYWORD_MAP)) {
     if (keywords.some(kw => lower.includes(kw))) {
@@ -54,29 +53,25 @@ function analyzeResumeText(text, targetRole = 'Software Engineer') {
     }
   }
 
-  // Missing high-demand keywords (filtered from trending list)
   const missingKeywords = TRENDING_MISSING.filter(kw => {
     const kl = kw.toLowerCase();
     return !kl.split(/[\s/&]+/).some(word => word.length > 3 && lower.includes(word));
   });
 
-  // ATS score: base 50 + skill coverage + bonus keywords
   let score = 50;
   score += Math.min(30, detectedSkills.length * 5);
   if (lower.includes('docker') || lower.includes('kubernetes')) score += 6;
   if (lower.includes('aws') || lower.includes('gcp') || lower.includes('cloud')) score += 6;
   if (lower.includes('react') || lower.includes('python')) score += 5;
-  if (/\d+%\b|\d+x\b|\d+\s*(?:times|users|requests|ms)/i.test(sanitized)) score += 4; // quantified impact
+  if (/\d+%\b|\d+x\b|\d+\s*(?:times|users|requests|ms)/i.test(sanitized)) score += 4;
   if (lower.includes('github') || lower.includes('gitlab') || lower.includes('portfolio')) score += 3;
   
-  // Target role alignment bonus
   if (targetRole && lower.includes(targetRole.toLowerCase().split(' ')[0])) {
     score += 4;
   }
 
   score = Math.min(98, Math.max(45, score));
 
-  // Dynamic recommendations based on findings
   const recommendations = [];
   if (!lower.includes('docker') && !lower.includes('kubernetes')) {
     recommendations.push('Add Docker containerization & orchestration to your technical skills.');
@@ -104,7 +99,6 @@ function analyzeResumeText(text, targetRole = 'Software Engineer') {
 async function extractTextFromFile(file) {
   if (!file) throw new Error('No file provided');
 
-  // Check file size (max 10MB)
   if (file.size > 10 * 1024 * 1024) {
     throw new Error('File is too large. Please upload a resume file under 10MB.');
   }
@@ -113,7 +107,6 @@ async function extractTextFromFile(file) {
   const isPdf = file.type === 'application/pdf' || fileName.endsWith('.pdf');
   const isTxt = file.type === 'text/plain' || fileName.endsWith('.txt') || fileName.endsWith('.md') || fileName.endsWith('.rtf');
   
-  // 1. Plain text files
   if (isTxt) {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -123,7 +116,6 @@ async function extractTextFromFile(file) {
     });
   }
 
-  // 2. PDF extraction via pdfjs-dist with fallback
   if (isPdf) {
     try {
       const arrayBuffer = await file.arrayBuffer();
@@ -153,7 +145,6 @@ async function extractTextFromFile(file) {
       console.warn('Standard PDF parser encountered an issue, trying raw text fallback:', pdfErr);
     }
 
-    // Fallback: extract ASCII streams from PDF
     try {
       const arrayBuffer = await file.arrayBuffer();
       const bytes = new Uint8Array(arrayBuffer);
@@ -177,8 +168,6 @@ async function extractTextFromFile(file) {
     throw new Error('Unable to extract text from this PDF. It may be an image scan or password-protected. You can paste your resume text directly into the text box below.');
   }
 
-  // 3. For .docx/.doc and other binary formats — do NOT try file.text() (it reads raw binary garbage)
-  // Instead, show a clear user-friendly message to paste text manually
   const ext = fileName.split('.').pop() || '';
   if (['doc', 'docx', 'odt'].includes(ext)) {
     throw new Error(
@@ -189,9 +178,11 @@ async function extractTextFromFile(file) {
   throw new Error(`Unsupported file type (.${ext}). Please upload a .pdf or .txt file, or paste your resume text below.`);
 }
 
-// ── Main Component ───────────────────────────────────────────────
 export default function ResumeAnalyzer() {
   const { currentStudent, opportunities } = useApp();
+
+  const containerRef = useRef(null);
+  useGsapStagger(containerRef, '.gsap-resume-item', { y: 20, stagger: 0.08 });
 
   const defaultText = `${currentStudent.name} – ${currentStudent.university} (${currentStudent.department})
 Target Role: ${currentStudent.targetRole}
@@ -209,7 +200,6 @@ Experience: Software Engineering Intern at TechCorp Solutions (Reduced API respo
   const [suggestedJobs, setSuggestedJobs]       = useState([]);
   const fileInputRef = useRef(null);
 
-  // Sync default text when student or targetRole changes and user hasn't uploaded custom resume
   useEffect(() => {
     if (!uploadedFileName && (!result || result.score === currentStudent.resumeATSScore)) {
       setResumeText(`${currentStudent.name} – ${currentStudent.university} (${currentStudent.department})
@@ -220,7 +210,6 @@ Experience: Software Engineering Intern at TechCorp Solutions (Reduced API respo
     }
   }, [currentStudent, uploadedFileName]);
 
-  // ── Run ATS analysis asynchronously without blocking UI ────────
   const runAnalysis = useCallback((text) => {
     if (!text || !text.trim()) {
       setErrorMessage('Please paste your resume text or upload a resume file to analyze.');
@@ -231,7 +220,6 @@ Experience: Software Engineering Intern at TechCorp Solutions (Reduced API respo
     setIsProcessing(true);
     setLoadingStep('Analyzing keywords & skill alignment...');
 
-    // Run in next animation frame / tick so loading animation renders immediately
     setTimeout(() => {
       try {
         const analysis = analyzeResumeText(text, currentStudent.targetRole);
@@ -239,7 +227,6 @@ Experience: Software Engineering Intern at TechCorp Solutions (Reduced API respo
 
         setLoadingStep('Matching top opportunities...');
 
-        // Build a temporary student profile from parsed skills
         const tempProfile = {
           ...currentStudent,
           skills: Object.keys(SKILL_KEYWORD_MAP).map(name => ({
@@ -249,7 +236,6 @@ Experience: Software Engineering Intern at TechCorp Solutions (Reduced API respo
           })),
         };
 
-        // Score active opportunities and take top 3
         const opps = Array.isArray(opportunities) ? opportunities : [];
         const ranked = opps
           .filter(o => o.status === 'ACTIVE')
@@ -268,7 +254,6 @@ Experience: Software Engineering Intern at TechCorp Solutions (Reduced API respo
     }, 600);
   }, [currentStudent, opportunities]);
 
-  // ── File upload handler with full async extraction & safety ────
   const handleFile = useCallback(async (file) => {
     if (!file) return;
 
@@ -310,9 +295,8 @@ Experience: Software Engineering Intern at TechCorp Solutions (Reduced API respo
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
-  // ── Derived display values ───────────────────────────────────────
   const atsScore    = result?.score ?? currentStudent.resumeATSScore ?? 84;
-  const scoreGrade  = atsScore >= 85 ? 'Excellent' : atsScore >= 70 ? 'Strong' : atsScore >= 55 ? 'Average' : 'Needs Work';
+  const scoreGrade  = atsScore >= 85 ? 'Executive Ready' : atsScore >= 70 ? 'Strong Alignment' : atsScore >= 55 ? 'Average Alignment' : 'Needs Optimization';
   const scoreColor  = atsScore >= 85 ? 'var(--accent-emerald)' : atsScore >= 70 ? 'var(--accent-indigo)' : atsScore >= 55 ? 'var(--accent-amber)' : 'var(--accent-rose)';
   const conic       = `conic-gradient(${scoreColor} 0% ${atsScore}%, var(--border-color) ${atsScore}% 100%)`;
 
@@ -337,15 +321,15 @@ Experience: Software Engineering Intern at TechCorp Solutions (Reduced API respo
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+    <div ref={containerRef} style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
 
       {/* ── Top Banner ── */}
-      <div className="glass-card flex-between" style={{ gap: '20px', flexWrap: 'wrap' }}>
+      <div className="glass-card flex-between gsap-resume-item" style={{ gap: '20px', flexWrap: 'wrap' }}>
         <div>
           <span className="badge badge-indigo" style={{ marginBottom: '8px' }}>
             <FileCheck2 size={12} /> AI Resume Optimizer
           </span>
-          <h2 style={{ fontSize: '1.6rem', fontWeight: 800 }}>
+          <h2 style={{ fontSize: '1.7rem', fontWeight: 800 }}>
             ATS Resume Parser &amp; <span className="gradient-text">Skill Matcher</span>
           </h2>
           <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginTop: '4px' }}>
@@ -355,15 +339,15 @@ Experience: Software Engineering Intern at TechCorp Solutions (Reduced API respo
 
         {/* Score ring */}
         <div className="glass-card glass-card-sm" style={{ display: 'flex', alignItems: 'center', gap: '16px', background: 'var(--bg-input)', flexShrink: 0 }}>
-          <div style={{ width: 64, height: 64, borderRadius: '50%', background: conic, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: `0 0 16px ${scoreColor}55` }}>
-            <div style={{ width: 50, height: 50, borderRadius: '50%', background: 'var(--bg-secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '0.9rem', color: scoreColor }}>
+          <div style={{ width: 68, height: 68, borderRadius: '50%', background: conic, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: `0 0 16px ${scoreColor}44` }}>
+            <div style={{ width: 54, height: 54, borderRadius: '50%', background: 'var(--bg-secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '0.95rem', color: scoreColor, fontFamily: 'var(--font-mono)' }}>
               {atsScore}%
             </div>
           </div>
           <div>
-            <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>ATS SCORE</div>
+            <div style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-muted)' }}>ATS COMPLIANCE</div>
             <div style={{ fontSize: '1.1rem', fontWeight: 700, color: scoreColor }}>{scoreGrade}</div>
-            <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>for {currentStudent.targetRole}</div>
+            <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>Target: {currentStudent.targetRole}</div>
           </div>
         </div>
       </div>
@@ -380,7 +364,6 @@ Experience: Software Engineering Intern at TechCorp Solutions (Reduced API respo
           justifyContent: 'space-between',
           gap: '12px',
           color: 'var(--accent-rose)',
-          animation: 'fadeIn 0.2s ease-out'
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <AlertCircle size={20} style={{ flexShrink: 0 }} />
@@ -397,17 +380,17 @@ Experience: Software Engineering Intern at TechCorp Solutions (Reduced API respo
       )}
 
       {/* ── Two column: input | results ── */}
-      <div className="grid-2">
+      <div className="grid-2 gsap-resume-item">
 
         {/* LEFT – Upload & Paste */}
         <div className="glass-card" style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
 
           <div className="flex-between">
-            <h3 style={{ fontSize: '1.05rem', fontWeight: 700 }}>Upload or Paste Resume</h3>
+            <h3 style={{ fontSize: '1.1rem', fontWeight: 700 }}>Upload or Paste Resume</h3>
             {uploadedFileName && (
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.8rem', color: 'var(--accent-cyan)' }}>
                 <FileText size={14} />
-                <span style={{ maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{uploadedFileName}</span>
+                <span style={{ maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontWeight: 600 }}>{uploadedFileName}</span>
                 <button onClick={clearAll} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', padding: 0, display: 'flex' }} title="Remove file">
                   <X size={14} />
                 </button>
@@ -424,7 +407,7 @@ Experience: Software Engineering Intern at TechCorp Solutions (Reduced API respo
             style={{
               border: `2px dashed ${isDragOver ? 'var(--accent-cyan)' : 'var(--border-color)'}`,
               borderRadius: 'var(--radius-md)',
-              padding: '20px 14px',
+              padding: '22px 16px',
               textAlign: 'center',
               cursor: isProcessing ? 'not-allowed' : 'pointer',
               background: isDragOver ? 'var(--accent-cyan-glow)' : 'var(--bg-input)',
@@ -439,8 +422,8 @@ Experience: Software Engineering Intern at TechCorp Solutions (Reduced API respo
           >
             {isProcessing ? (
               <>
-                <Loader2 size={30} color="var(--accent-cyan)" className="spin" style={{ animation: 'spin 1s linear infinite' }} />
-                <div style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--accent-cyan)' }}>
+                <Loader2 size={30} color="var(--accent-cyan)" style={{ animation: 'spin 1s linear infinite' }} />
+                <div style={{ fontSize: '0.92rem', fontWeight: 700, color: 'var(--accent-cyan)' }}>
                   {loadingStep || 'Processing Resume...'}
                 </div>
                 <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
@@ -450,10 +433,10 @@ Experience: Software Engineering Intern at TechCorp Solutions (Reduced API respo
             ) : (
               <>
                 <Upload size={28} color={isDragOver ? 'var(--accent-cyan)' : 'var(--accent-indigo)'} />
-                <div style={{ fontSize: '0.92rem', fontWeight: 700 }}>
+                <div style={{ fontSize: '0.95rem', fontWeight: 700 }}>
                   {isDragOver ? 'Drop file to analyze!' : 'Drag & drop resume file (.pdf, .txt)'}
                 </div>
-                <div style={{ fontSize: '0.74rem', color: 'var(--text-muted)' }}>
+                <div style={{ fontSize: '0.76rem', color: 'var(--text-muted)' }}>
                   PDF documents automatically extracted and parsed
                 </div>
                 <span className="badge badge-indigo" style={{ marginTop: '4px', cursor: 'pointer' }}>
@@ -472,13 +455,13 @@ Experience: Software Engineering Intern at TechCorp Solutions (Reduced API respo
             />
           </div>
 
-          <div style={{ textAlign: 'center', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+          <div style={{ textAlign: 'center', fontSize: '0.78rem', color: 'var(--text-muted)', fontWeight: 600 }}>
             — or edit / paste resume text below —
           </div>
 
           <textarea
             id="resume-text-area"
-            rows={9}
+            rows={8}
             value={resumeText}
             onChange={e => setResumeText(e.target.value)}
             placeholder="Paste your full resume text here..."
@@ -496,7 +479,7 @@ Experience: Software Engineering Intern at TechCorp Solutions (Reduced API respo
             >
               {isProcessing ? (
                 <>
-                  <Loader2 size={16} className="spin" style={{ animation: 'spin 1s linear infinite' }} />
+                  <Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} />
                   <span>Processing...</span>
                 </>
               ) : (
@@ -513,7 +496,7 @@ Experience: Software Engineering Intern at TechCorp Solutions (Reduced API respo
                 className="btn btn-secondary"
                 onClick={clearAll}
                 disabled={isProcessing}
-                style={{ fontSize: '0.8rem' }}
+                style={{ fontSize: '0.82rem' }}
               >
                 Reset
               </button>
@@ -524,7 +507,7 @@ Experience: Software Engineering Intern at TechCorp Solutions (Reduced API respo
         {/* RIGHT – Diagnostics Panel */}
         <div className="glass-card" style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
           <div>
-            <h3 style={{ fontSize: '1.05rem', fontWeight: 700, marginBottom: '4px' }}>AI Scan Diagnostics</h3>
+            <h3 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: '4px' }}>AI Scan Diagnostics</h3>
             <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
               {result ? 'Results tailored for ' + currentStudent.targetRole + '.' : 'Upload or click "Run ATS Analysis" to evaluate.'}
             </p>
@@ -532,7 +515,7 @@ Experience: Software Engineering Intern at TechCorp Solutions (Reduced API respo
 
           {/* Detected skills */}
           <div>
-            <div style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--accent-emerald)', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <div style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--accent-emerald)', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
               <CheckCircle size={15} /> Detected Skills ({shownSkills.length})
             </div>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
@@ -545,7 +528,7 @@ Experience: Software Engineering Intern at TechCorp Solutions (Reduced API respo
 
           {/* Missing keywords */}
           <div>
-            <div style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--accent-rose)', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <div style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--accent-rose)', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
               <AlertTriangle size={15} /> Missing High-Demand Keywords ({shownMissing.length})
             </div>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
@@ -554,14 +537,14 @@ Experience: Software Engineering Intern at TechCorp Solutions (Reduced API respo
           </div>
 
           {/* Recommendations */}
-          <div style={{ background: 'var(--bg-input)', padding: '14px', borderRadius: 'var(--radius-md)', flex: 1 }}>
-            <div style={{ fontSize: '0.85rem', fontWeight: 700, marginBottom: '10px' }}>
-              💡 AI Actionable Recommendations for {currentStudent.targetRole}
+          <div style={{ background: 'var(--bg-input)', padding: '16px', borderRadius: 'var(--radius-md)', flex: 1, border: '1px solid var(--border-subtle)' }}>
+            <div style={{ fontSize: '0.88rem', fontWeight: 700, marginBottom: '10px' }}>
+              💡 Actionable Recommendations for {currentStudent.targetRole}
             </div>
             <ul style={{ listStyle: 'none', padding: 0, display: 'flex', flexDirection: 'column', gap: '10px' }}>
               {shownRecs.map((rec, i) => (
-                <li key={i} style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
-                  <ArrowRight size={14} color="var(--accent-indigo)" style={{ flexShrink: 0, marginTop: '2px' }} />
+                <li key={i} style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', display: 'flex', alignItems: 'flex-start', gap: '8px', lineHeight: 1.45 }}>
+                  <ArrowRight size={14} color="var(--accent-indigo)" style={{ flexShrink: 0, marginTop: '3px' }} />
                   <span>{rec}</span>
                 </li>
               ))}
@@ -572,52 +555,52 @@ Experience: Software Engineering Intern at TechCorp Solutions (Reduced API respo
 
       {/* ── Suggested Jobs (only after analysis) ── */}
       {suggestedJobs.length > 0 && (
-        <div className="glass-card" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          <div className="flex-between">
+        <div className="glass-card gsap-resume-item" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <div className="flex-between" style={{ flexWrap: 'wrap', gap: '10px' }}>
             <div>
               <div className="badge badge-cyan" style={{ marginBottom: '6px' }}>
                 <Briefcase size={12} /> Matched from Your Resume
               </div>
-              <h3 style={{ fontSize: '1.05rem', fontWeight: 700 }}>Top Opportunities for Your Profile</h3>
-              <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '2px' }}>
+              <h3 style={{ fontSize: '1.15rem', fontWeight: 700 }}>Top Opportunities for Your Profile</h3>
+              <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '2px' }}>
                 Ranked by skill match extracted from your resume against {currentStudent.targetRole} opportunities.
               </p>
             </div>
             <span className="badge badge-indigo">{suggestedJobs.length} Best Matches</span>
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
             {suggestedJobs.map(job => (
               <div
                 key={job.id}
                 style={{
                   background: 'var(--bg-input)',
-                  padding: '14px 16px',
+                  padding: '16px 20px',
                   borderRadius: 'var(--radius-md)',
                   display: 'flex',
                   justifyContent: 'space-between',
                   alignItems: 'center',
                   flexWrap: 'wrap',
-                  gap: '12px',
-                  border: '1px solid var(--border-color)'
+                  gap: '14px',
+                  border: '1px solid var(--border-subtle)'
                 }}
               >
-                <div style={{ display: 'flex', gap: '14px', alignItems: 'center', flex: 1, minWidth: '200px' }}>
-                  <span style={{ fontSize: '1.6rem', flexShrink: 0 }}>{job.logo}</span>
+                <div style={{ display: 'flex', gap: '14px', alignItems: 'center', flex: 1, minWidth: '220px' }}>
+                  <span style={{ fontSize: '1.8rem', flexShrink: 0 }}>{job.logo}</span>
                   <div>
-                    <div style={{ fontWeight: 700, fontSize: '0.95rem' }}>{job.title}</div>
-                    <div style={{ fontSize: '0.8rem', color: 'var(--accent-indigo)', fontWeight: 600 }}>{job.company}</div>
-                    <div style={{ display: 'flex', gap: '6px', marginTop: '5px', flexWrap: 'wrap' }}>
-                      <span className="badge badge-cyan" style={{ fontSize: '0.68rem' }}>{job.type}</span>
-                      <span className="badge badge-indigo" style={{ fontSize: '0.68rem', background: 'var(--bg-card)', color: 'var(--text-muted)', border: '1px solid var(--border-color)' }}>{job.workMode}</span>
-                      <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', alignSelf: 'center' }}>{job.location}</span>
+                    <div style={{ fontWeight: 700, fontSize: '0.98rem' }}>{job.title}</div>
+                    <div style={{ fontSize: '0.82rem', color: 'var(--accent-indigo)', fontWeight: 600 }}>{job.company}</div>
+                    <div style={{ display: 'flex', gap: '6px', marginTop: '6px', flexWrap: 'wrap' }}>
+                      <span className="badge badge-cyan" style={{ fontSize: '0.7rem' }}>{job.type}</span>
+                      <span className="badge badge-indigo" style={{ fontSize: '0.7rem', background: 'var(--bg-card)', color: 'var(--text-muted)', border: '1px solid var(--border-color)' }}>{job.workMode}</span>
+                      <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', alignSelf: 'center' }}>{job.location}</span>
                     </div>
                   </div>
                 </div>
 
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '8px' }}>
-                  <span className="badge badge-emerald" style={{ fontSize: '0.82rem', padding: '5px 12px' }}>
-                    <Sparkles size={11} /> {job.matchScore}% Match
+                  <span className="badge badge-emerald" style={{ fontSize: '0.85rem', padding: '5px 12px' }}>
+                    <Sparkles size={12} /> {job.matchScore}% Match
                   </span>
                   <a
                     href={job.applyUrl}

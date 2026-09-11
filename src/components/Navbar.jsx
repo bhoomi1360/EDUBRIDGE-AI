@@ -1,19 +1,19 @@
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
 import { 
   Sparkles, 
   Sun, 
   Moon, 
   Bot, 
-  Bell, 
   GraduationCap, 
   Building2, 
   Briefcase, 
   Globe,
-  ChevronDown,
-  ShieldCheck
+  User,
+  ChevronDown
 } from 'lucide-react';
 import { INITIAL_ROLES } from '../data/mockData';
+import gsap from 'gsap';
 
 export default function Navbar() {
   const { 
@@ -29,20 +29,37 @@ export default function Navbar() {
     setIsEditProfileOpen
   } = useApp();
 
+  const navRef = useRef(null);
+
+  useEffect(() => {
+    if (navRef.current) {
+      gsap.fromTo(
+        navRef.current,
+        { y: -16, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.5, ease: 'power2.out' }
+      );
+    }
+  }, []);
+
   return (
-    <header style={{
-      background: 'var(--bg-secondary)',
-      borderBottom: 'var(--glass-border)',
-      padding: '14px 28px',
-      position: 'sticky',
-      top: 0,
-      zIndex: 100,
-      backdropFilter: 'blur(16px)'
-    }}>
+    <header 
+      ref={navRef}
+      style={{
+        background: 'var(--bg-secondary)',
+        borderBottom: 'var(--glass-border)',
+        padding: '12px 28px',
+        position: 'sticky',
+        top: 0,
+        zIndex: 100,
+        backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)',
+        transition: 'background-color 0.25s ease, border-color 0.25s ease'
+      }}
+    >
       <div className="flex-between" style={{ gap: '20px' }}>
         
         {/* Brand Logo */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
           <div style={{
             width: '42px',
             height: '42px',
@@ -51,70 +68,72 @@ export default function Navbar() {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            boxShadow: '0 4px 14px rgba(99, 102, 241, 0.4)'
+            boxShadow: '0 4px 16px rgba(99, 102, 241, 0.35)',
+            position: 'relative'
           }}>
             <Sparkles size={22} color="white" />
           </div>
           <div>
-            <div style={{ fontSize: '1.25rem', fontWeight: 800, lineHeight: 1.1 }}>
+            <div style={{ fontSize: '1.25rem', fontWeight: 800, lineHeight: 1.1, fontFamily: 'var(--font-heading)' }}>
               Edu<span className="gradient-text">Bridge AI</span>
             </div>
-            <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', letterSpacing: '0.05em', textTransform: 'uppercase' }}>
-              Academia • Industry Skill Mapping
+            <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', letterSpacing: '0.06em', textTransform: 'uppercase', fontWeight: 600 }}>
+              Academia • Industry Intelligence
             </div>
           </div>
         </div>
 
         {/* Stakeholder Persona Role Switcher */}
-        <div className="role-pill">
+        <nav className="role-pill" aria-label="Portal Navigation">
           <button 
             className={`role-tab ${role === INITIAL_ROLES.STUDENT ? 'active' : ''}`}
             onClick={() => setRole(INITIAL_ROLES.STUDENT)}
           >
-            <GraduationCap size={14} style={{ display: 'inline', marginRight: '6px' }} />
-            Student Hub
+            <GraduationCap size={15} />
+            <span>Student Hub</span>
           </button>
 
           <button 
             className={`role-tab ${role === INITIAL_ROLES.ACADEMIA ? 'active' : ''}`}
             onClick={() => setRole(INITIAL_ROLES.ACADEMIA)}
           >
-            <Building2 size={14} style={{ display: 'inline', marginRight: '6px' }} />
-            Academia & TPO
+            <Building2 size={15} />
+            <span>Academia & TPO</span>
           </button>
 
           <button 
             className={`role-tab ${role === INITIAL_ROLES.INDUSTRY ? 'active' : ''}`}
             onClick={() => setRole(INITIAL_ROLES.INDUSTRY)}
           >
-            <Briefcase size={14} style={{ display: 'inline', marginRight: '6px' }} />
-            Industry Recruiter
+            <Briefcase size={15} />
+            <span>Industry Recruiter</span>
           </button>
 
           <button 
             className={`role-tab ${role === INITIAL_ROLES.ADMIN ? 'active' : ''}`}
             onClick={() => setRole(INITIAL_ROLES.ADMIN)}
           >
-            <Globe size={14} style={{ display: 'inline', marginRight: '6px' }} />
-            National Observatory
+            <Globe size={15} />
+            <span>National Observatory</span>
           </button>
-        </div>
+        </nav>
 
-        {/* Action Icons & User Switcher */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+        {/* Action Controls & User Profile Switcher */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           
           {/* AI Skill Assistant Button */}
           <button 
             className="btn btn-cyan btn-sm"
             onClick={() => setIsAIChatOpen(!isAIChatOpen)}
-            style={{ borderRadius: 'var(--radius-full)' }}
+            style={{ borderRadius: 'var(--radius-full)', padding: '6px 14px' }}
+            title="Open AI Career & Skill Advisor"
           >
             <Bot size={16} />
             <span>AI Advisor</span>
-            <span className="pulse-dot" style={{ marginLeft: '4px' }}></span>
+            <span className="pulse-dot" style={{ marginLeft: '2px' }}></span>
           </button>
 
-          {/* Theme Toggle */}
+          {/* Theme Toggle Button */}
           <button 
             onClick={toggleTheme}
             style={{
@@ -128,19 +147,31 @@ export default function Navbar() {
               alignItems: 'center',
               justifyContent: 'center',
               cursor: 'pointer',
-              transition: 'all 0.2s'
+              transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)'
             }}
-            title="Toggle Light/Dark Theme"
+            title={theme === 'dark' ? 'Switch to Crisp Light Mode' : 'Switch to Obsidian Dark Mode'}
           >
-            {theme === 'dark' ? <Sun size={18} color="#fbbf24" /> : <Moon size={18} color="#6366f1" />}
+            {theme === 'dark' ? (
+              <Sun size={18} color="#fbbf24" style={{ transition: 'transform 0.3s ease' }} />
+            ) : (
+              <Moon size={18} color="#4f46e5" style={{ transition: 'transform 0.3s ease' }} />
+            )}
           </button>
 
-          {/* Student Profile Quick Select & Edit — always visible */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'var(--bg-input)', padding: '3px 8px 3px 6px', borderRadius: 'var(--radius-full)', border: '1px solid var(--border-color)' }}>
+          {/* Student Profile Quick Select & Edit */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            background: 'var(--bg-input)',
+            padding: '3px 10px 3px 6px',
+            borderRadius: 'var(--radius-full)',
+            border: '1px solid var(--border-color)'
+          }}>
             <button
               id="header-profile-btn"
               onClick={() => setIsEditProfileOpen(true)}
-              title="Click to edit your profile"
+              title="Click to view and edit student profile"
               style={{
                 background: 'none',
                 border: 'none',
@@ -155,9 +186,15 @@ export default function Navbar() {
             >
               <div style={{ position: 'relative' }}>
                 <img 
-                  src={currentStudent.avatar} 
-                  alt={currentStudent.name} 
-                  style={{ width: '32px', height: '32px', borderRadius: '50%', objectFit: 'cover', border: '1.5px solid var(--accent-indigo)' }} 
+                  src={currentStudent?.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=250'} 
+                  alt={currentStudent?.name} 
+                  style={{
+                    width: '32px',
+                    height: '32px',
+                    borderRadius: '50%',
+                    objectFit: 'cover',
+                    border: '1.5px solid var(--accent-indigo)'
+                  }} 
                 />
                 <div style={{
                   position: 'absolute',
@@ -175,18 +212,18 @@ export default function Navbar() {
                   <span style={{ fontSize: '8px', color: '#fff', lineHeight: 1 }}>✎</span>
                 </div>
               </div>
-              <div style={{ lineHeight: 1.2 }}>
+              <div style={{ lineHeight: 1.15 }}>
                 <div style={{ fontSize: '0.8rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '4px' }}>
-                  {currentStudent.name}
+                  {currentStudent?.name}
                 </div>
-                <div style={{ fontSize: '0.65rem', color: 'var(--accent-cyan)' }}>
-                  {currentStudent.targetRole}
+                <div style={{ fontSize: '0.65rem', color: 'var(--accent-cyan)', fontWeight: 600 }}>
+                  {currentStudent?.targetRole}
                 </div>
               </div>
             </button>
 
             <select 
-              value={currentStudent.id}
+              value={currentStudent?.id}
               onChange={(e) => setActiveStudentId(e.target.value)}
               style={{
                 background: 'transparent',
@@ -194,19 +231,19 @@ export default function Navbar() {
                 color: 'var(--text-muted)',
                 cursor: 'pointer',
                 fontSize: '0.75rem',
+                fontWeight: 600,
                 outline: 'none',
-                paddingLeft: '4px'
+                paddingLeft: '6px'
               }}
-              title="Switch active student"
+              title="Switch active student profile"
             >
               {students.map(s => (
                 <option key={s.id} value={s.id} style={{ background: 'var(--bg-secondary)', color: 'var(--text-primary)' }}>
-                  Switch: {s.name}
+                  {s.name}
                 </option>
               ))}
             </select>
           </div>
-
 
         </div>
 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useApp } from '../../context/AppContext';
 import { calculateMatchScore } from '../../utils/matchEngine';
 import { formatPostingDate } from '../../data/opportunitiesData';
@@ -10,16 +10,14 @@ import {
   ExternalLink, 
   CheckCircle2, 
   Sparkles, 
-  HelpCircle, 
   Calendar,
   ShieldCheck,
-  AlertTriangle,
   ChevronDown,
   ChevronUp,
-  Filter
+  Bookmark
 } from 'lucide-react';
+import { useGsapStagger } from '../../utils/animations';
 
-// Date filter constants
 const DATE_FILTERS = [
   { id: 'ALL', label: 'All' },
   { id: 'TODAY', label: 'Today', maxDays: 0 },
@@ -28,7 +26,6 @@ const DATE_FILTERS = [
   { id: '30_DAYS', label: 'Last 30 Days', maxDays: 30 }
 ];
 
-// Calculate day difference between today and post date
 function getDaysSincePosted(dateString) {
   if (!dateString) return 999;
   const postDate = new Date(dateString);
@@ -57,20 +54,19 @@ export default function InternshipBoard() {
   const [selectedDateFilter, setSelectedDateFilter] = useState('ALL');
   const [expandedMatchId, setExpandedMatchId] = useState(null);
 
-  // Filter opportunities by Search Term, Type Tab, and Date Filter
+  const containerRef = useRef(null);
+  useGsapStagger(containerRef, '.gsap-opp-card', { y: 20, stagger: 0.06 });
+
   const filteredOpportunities = opportunities.filter(opp => {
-    // 1. Text Search
     const matchesSearch = opp.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
                           opp.company.toLowerCase().includes(searchTerm.toLowerCase()) ||
                           opp.skills.some(s => s.toLowerCase().includes(searchTerm.toLowerCase()));
     
-    // 2. Category Tab
     let matchesType = true;
     if (selectedTypeTab === 'JOBS') matchesType = opp.type === 'JOB';
     if (selectedTypeTab === 'INTERNSHIPS') matchesType = opp.type === 'INTERNSHIP';
     if (selectedTypeTab === 'APPRENTICESHIPS') matchesType = opp.type === 'APPRENTICESHIP';
 
-    // 3. Dynamic Date Filter (calculated from actual postedDate)
     let matchesDate = true;
     const daysAgo = getDaysSincePosted(opp.postedDate);
 
@@ -92,7 +88,7 @@ export default function InternshipBoard() {
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+    <div ref={containerRef} style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
       
       {/* Top Banner */}
       <div className="glass-card flex-between" style={{ gap: '20px', flexWrap: 'wrap' }}>
@@ -100,8 +96,8 @@ export default function InternshipBoard() {
           <span className="badge badge-cyan" style={{ marginBottom: '8px' }}>
             <Briefcase size={12} /> Curated Industry Opportunities
           </span>
-          <h2 style={{ fontSize: '1.6rem', fontWeight: 800 }}>
-            Skill-Mapped <span className="gradient-text">Jobs, Internships & Apprenticeships</span>
+          <h2 style={{ fontSize: '1.7rem', fontWeight: 800 }}>
+            Skill-Mapped <span className="gradient-text">Jobs, Internships &amp; Apprenticeships</span>
           </h2>
           <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginTop: '4px' }}>
             Matched for <strong>{currentStudent.targetRole}</strong> — live opportunities ranked by explainable AI skill matching.
@@ -110,7 +106,7 @@ export default function InternshipBoard() {
 
         {/* Search Bar & Category Filter Tabs */}
         <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
-          <div style={{ position: 'relative', minWidth: '220px' }}>
+          <div style={{ position: 'relative', minWidth: '230px' }}>
             <Search size={16} color="var(--text-muted)" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
             <input 
               id="job-search-input"
@@ -123,7 +119,7 @@ export default function InternshipBoard() {
                 background: 'var(--bg-input)',
                 border: '1px solid var(--border-color)',
                 borderRadius: 'var(--radius-full)',
-                padding: '8px 16px 8px 36px',
+                padding: '9px 16px 9px 36px',
                 color: 'var(--text-primary)',
                 fontSize: '0.85rem',
                 outline: 'none'
@@ -134,7 +130,7 @@ export default function InternshipBoard() {
           {/* Category Tabs */}
           <div className="role-pill">
             {[
-              { id: 'ALL', label: 'All Types' },
+              { id: 'ALL', label: 'All' },
               { id: 'JOBS', label: 'Jobs' },
               { id: 'INTERNSHIPS', label: 'Internships' },
               { id: 'APPRENTICESHIPS', label: 'Apprenticeships' }
@@ -143,7 +139,7 @@ export default function InternshipBoard() {
                 key={tab.id}
                 onClick={() => setSelectedTypeTab(tab.id)}
                 className={`role-tab ${selectedTypeTab === tab.id ? 'active' : ''}`}
-                style={{ fontSize: '0.75rem', padding: '6px 12px' }}
+                style={{ fontSize: '0.78rem', padding: '6px 13px' }}
               >
                 {tab.label}
               </button>
@@ -153,10 +149,10 @@ export default function InternshipBoard() {
       </div>
 
       {/* Date-Based Filters Bar */}
-      <div className="glass-card" style={{ padding: '12px 18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
+      <div className="glass-card" style={{ padding: '14px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-secondary)' }}>
           <Clock size={16} color="var(--accent-cyan)" />
-          <span>Freshness & Posting Date:</span>
+          <span>Freshness Index:</span>
         </div>
 
         <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
@@ -182,19 +178,19 @@ export default function InternshipBoard() {
           })}
         </div>
 
-        <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
-          Showing <strong>{filteredOpportunities.length}</strong> of {opportunities.length} opportunities
+        <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+          Displaying <strong>{filteredOpportunities.length}</strong> of {opportunities.length} postings
         </div>
       </div>
 
       {/* Opportunity Cards List */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
         {filteredOpportunities.length === 0 ? (
-          <div className="glass-card" style={{ textAlign: 'center', padding: '40px 20px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
-            <Calendar size={36} color="var(--text-muted)" />
-            <h3 style={{ fontSize: '1.1rem', fontWeight: 700 }}>No opportunities match this filter</h3>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', maxWidth: '400px' }}>
-              No openings were found for the selected date timeframe. Try choosing <strong>"Last 7 Days"</strong>, <strong>"Last 14 Days"</strong>, or <strong>"All"</strong>.
+          <div className="glass-card" style={{ textAlign: 'center', padding: '48px 20px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
+            <Calendar size={40} color="var(--text-muted)" />
+            <h3 style={{ fontSize: '1.15rem', fontWeight: 700 }}>No opportunities match current criteria</h3>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.88rem', maxWidth: '420px' }}>
+              No openings were found for the selected timeframe. Try selecting <strong>"All"</strong> or widening your search terms.
             </p>
             <button 
               className="btn btn-primary btn-sm"
@@ -205,10 +201,8 @@ export default function InternshipBoard() {
           </div>
         ) : (
           filteredOpportunities.map((opp) => {
-            // Calculate Dynamic Match Score & Breakdown
             const { matchScore, matchedSkills, missingSkills, breakdown } = calculateMatchScore(currentStudent, opp);
 
-            // Check if student already has a tracking record for this opportunity
             const existingApp = applications.find(
               a => a.studentId === currentStudent.id && a.opportunityId === opp.id
             );
@@ -218,7 +212,6 @@ export default function InternshipBoard() {
             const relativeDate = formatPostingDate(opp.postedDate);
             const daysAgo = getDaysSincePosted(opp.postedDate);
 
-            // Format Source Label
             const getSourceLabel = (src) => {
               if (opp.isDemo || src === 'DEMO') return 'DEMO OPPORTUNITY';
               if (src === 'COMPANY_WEBSITE') return 'Company Careers';
@@ -230,7 +223,7 @@ export default function InternshipBoard() {
             return (
               <div 
                 key={opp.id} 
-                className="glass-card"
+                className="glass-card gsap-opp-card"
                 style={{ 
                   display: 'flex', 
                   flexDirection: 'column', 
@@ -243,35 +236,32 @@ export default function InternshipBoard() {
                   {/* Left Side Info */}
                   <div style={{ display: 'flex', gap: '16px', alignItems: 'flex-start', flex: 1, minWidth: '300px' }}>
                     <div style={{
-                      width: '54px',
-                      height: '54px',
+                      width: '56px',
+                      height: '56px',
                       borderRadius: 'var(--radius-md)',
                       background: 'var(--bg-input)',
                       border: '1px solid var(--border-color)',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      fontSize: '1.8rem',
+                      fontSize: '1.9rem',
                       flexShrink: 0
                     }}>
                       {opp.logo}
                     </div>
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
-                        <h3 style={{ fontSize: '1.15rem', fontWeight: 700 }}>{opp.title}</h3>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                        <h3 style={{ fontSize: '1.18rem', fontWeight: 700 }}>{opp.title}</h3>
 
-                        {/* Type Badge */}
                         <span className={`badge ${opp.type === 'JOB' ? 'badge-indigo' : opp.type === 'INTERNSHIP' ? 'badge-cyan' : 'badge-amber'}`}>
                           {opp.type}
                         </span>
 
-                        {/* Work Mode Badge */}
                         <span className="badge badge-indigo" style={{ background: 'var(--bg-input)', color: 'var(--text-secondary)', border: '1px solid var(--border-color)' }}>
                           {opp.workMode}
                         </span>
 
-                        {/* Posting Date Badge (Dynamic relative date) */}
                         <span 
                           className="badge" 
                           style={{ 
@@ -286,17 +276,16 @@ export default function InternshipBoard() {
                           <Clock size={11} /> {relativeDate}
                         </span>
 
-                        {/* Verification Status */}
                         <span className={`badge ${opp.status === 'ACTIVE' ? 'badge-emerald' : 'badge-rose'}`}>
-                          <ShieldCheck size={10} /> {opp.status}
+                          <ShieldCheck size={11} /> {opp.status}
                         </span>
                       </div>
 
-                      <div style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--accent-indigo)' }}>
-                        {opp.company} • <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>Source: {getSourceLabel(opp.source)} • Verified: {opp.lastVerifiedAt}</span>
+                      <div style={{ fontSize: '0.92rem', fontWeight: 600, color: 'var(--accent-indigo)' }}>
+                        {opp.company} • <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem', fontWeight: 400 }}>Source: {getSourceLabel(opp.source)} • Verified: {opp.lastVerifiedAt}</span>
                       </div>
 
-                      <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', maxWidth: '700px' }}>
+                      <p style={{ fontSize: '0.86rem', color: 'var(--text-secondary)', maxWidth: '720px', lineHeight: 1.5 }}>
                         {opp.description}
                       </p>
 
@@ -308,7 +297,7 @@ export default function InternshipBoard() {
                             <span 
                               key={sk} 
                               style={{
-                                fontSize: '0.75rem',
+                                fontSize: '0.74rem',
                                 padding: '3px 8px',
                                 borderRadius: 'var(--radius-sm)',
                                 background: isMatched ? 'rgba(16, 185, 129, 0.15)' : 'var(--bg-input)',
@@ -326,12 +315,12 @@ export default function InternshipBoard() {
                   </div>
 
                   {/* Right Side Match Score & Application Action */}
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '10px', minWidth: '200px' }}>
-                    <div style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--accent-emerald)' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '10px', minWidth: '210px' }}>
+                    <div style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--accent-emerald)', fontFamily: 'var(--font-mono)' }}>
                       {opp.stipend}
                     </div>
 
-                    <div style={{ display: 'flex', gap: '10px', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                    <div style={{ display: 'flex', gap: '10px', fontSize: '0.76rem', color: 'var(--text-muted)' }}>
                       <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                         <MapPin size={12} /> {opp.location}
                       </span>
@@ -349,14 +338,14 @@ export default function InternshipBoard() {
                         style={{ padding: '4px 8px', fontSize: '0.75rem' }}
                         title="Explain why this match score was assigned"
                       >
-                        Why this match? {isExpanded ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+                        Explain {isExpanded ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
                       </button>
                     </div>
 
                     {/* 2-STEP EXTERNAL APPLY BUTTON FLOW */}
                     {existingApp ? (
                       <div style={{ textAlign: 'right' }}>
-                        <span className="badge badge-emerald" style={{ padding: '6px 14px', fontSize: '0.8rem' }}>
+                        <span className="badge badge-emerald" style={{ padding: '6px 14px', fontSize: '0.82rem' }}>
                           <CheckCircle2 size={12} /> {existingApp.status}
                         </span>
                         <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '4px' }}>
@@ -364,7 +353,7 @@ export default function InternshipBoard() {
                         </div>
                       </div>
                     ) : isOpened ? (
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', alignItems: 'flex-end' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', alignItems: 'flex-end', width: '100%' }}>
                         <button 
                           onClick={() => confirmApplication(opp)}
                           className="btn btn-cyan btn-sm"
@@ -373,17 +362,27 @@ export default function InternshipBoard() {
                           <CheckCircle2 size={14} /> I Applied
                         </button>
                         <div style={{ fontSize: '0.68rem', color: 'var(--accent-amber)' }}>
-                          Confirm after completing external application
+                          Confirm after completing application
                         </div>
                       </div>
                     ) : (
-                      <button 
-                        onClick={() => openExternalApplyUrl(opp)}
-                        className="btn btn-primary btn-sm"
-                        style={{ width: '100%' }}
-                      >
-                        Apply Now ↗
-                      </button>
+                      <div style={{ display: 'flex', gap: '6px', width: '100%' }}>
+                        <button 
+                          onClick={() => saveOpportunity(opp)}
+                          className="btn btn-secondary btn-sm"
+                          title="Save opportunity"
+                          style={{ padding: '6px 10px' }}
+                        >
+                          <Bookmark size={14} />
+                        </button>
+                        <button 
+                          onClick={() => openExternalApplyUrl(opp)}
+                          className="btn btn-primary btn-sm"
+                          style={{ flex: 1 }}
+                        >
+                          Apply Now <ExternalLink size={13} />
+                        </button>
+                      </div>
                     )}
 
                   </div>
@@ -397,7 +396,7 @@ export default function InternshipBoard() {
                     padding: '16px', 
                     borderRadius: 'var(--radius-md)', 
                     border: '1px solid var(--border-color-hover)',
-                    marginTop: '8px',
+                    marginTop: '6px',
                     animation: 'fadeIn 0.2s ease-out'
                   }}>
                     <div style={{ fontSize: '0.9rem', fontWeight: 700, marginBottom: '10px', color: 'var(--text-primary)' }}>
@@ -436,7 +435,7 @@ export default function InternshipBoard() {
 
                     {/* Weighting Matrix */}
                     <div style={{ display: 'flex', gap: '16px', marginTop: '12px', paddingTop: '10px', borderTop: '1px solid var(--border-color)', flexWrap: 'wrap', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                      <span>Skill Weight (60%): <strong>{breakdown.skillScore} pts</strong></span>
+                      <span>Skill Match (60%): <strong>{breakdown.skillScore} pts</strong></span>
                       <span>Project Relevance (15%): <strong>{breakdown.projectScore} pts</strong></span>
                       <span>Academic GPA (10%): <strong>{breakdown.gpaScore} pts</strong></span>
                       <span>Eligibility (10%): <strong>{breakdown.eduScore} pts</strong></span>

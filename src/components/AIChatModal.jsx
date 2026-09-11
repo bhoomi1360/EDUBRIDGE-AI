@@ -1,11 +1,23 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
-import { Bot, Send, X, Sparkles, User, HelpCircle } from 'lucide-react';
+import { Bot, Send, X, Sparkles, User, HelpCircle, MessageSquare } from 'lucide-react';
+import gsap from 'gsap';
 
 export default function AIChatModal() {
   const { isAIChatOpen, setIsAIChatOpen, aiChatMessages, sendAIMessage, currentStudent } = useApp();
   const [inputText, setInputText] = useState('');
   const chatEndRef = useRef(null);
+  const modalRef = useRef(null);
+
+  useEffect(() => {
+    if (isAIChatOpen && modalRef.current) {
+      gsap.fromTo(
+        modalRef.current,
+        { opacity: 0, y: 30, scale: 0.94 },
+        { opacity: 1, y: 0, scale: 1, duration: 0.35, ease: 'back.out(1.2)' }
+      );
+    }
+  }, [isAIChatOpen]);
 
   useEffect(() => {
     if (isAIChatOpen) {
@@ -28,24 +40,27 @@ export default function AIChatModal() {
   };
 
   return (
-    <div style={{
-      position: 'fixed',
-      bottom: '24px',
-      right: '24px',
-      width: '420px',
-      maxHeight: '600px',
-      height: '80vh',
-      background: 'var(--bg-secondary)',
-      border: '1px solid var(--border-color-hover)',
-      borderRadius: 'var(--radius-lg)',
-      boxShadow: '0 20px 40px rgba(0, 0, 0, 0.5)',
-      display: 'flex',
-      flexDirection: 'column',
-      zIndex: 1000,
-      overflow: 'hidden',
-      backdropFilter: 'blur(16px)',
-      animation: 'slideUp 0.25s ease-out'
-    }}>
+    <div 
+      ref={modalRef}
+      style={{
+        position: 'fixed',
+        bottom: '24px',
+        right: '24px',
+        width: '430px',
+        maxHeight: '620px',
+        height: '82vh',
+        background: 'var(--bg-secondary)',
+        border: '1px solid var(--border-color-hover)',
+        borderRadius: 'var(--radius-xl)',
+        boxShadow: '0 24px 60px rgba(0, 0, 0, 0.55)',
+        display: 'flex',
+        flexDirection: 'column',
+        zIndex: 1000,
+        overflow: 'hidden',
+        backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)'
+      }}
+    >
       
       {/* Header */}
       <div className="flex-between" style={{
@@ -54,31 +69,35 @@ export default function AIChatModal() {
         color: 'white'
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <div style={{ background: 'rgba(255, 255, 255, 0.2)', padding: '6px', borderRadius: '8px' }}>
+          <div style={{ background: 'rgba(255, 255, 255, 0.22)', padding: '7px', borderRadius: '10px', display: 'flex' }}>
             <Bot size={20} color="white" />
           </div>
           <div>
-            <div style={{ fontWeight: 700, fontSize: '0.95rem', lineHeight: 1.2 }}>EduBridge AI Career Advisor</div>
-            <div style={{ fontSize: '0.7rem', opacity: 0.9 }}>Online • Skill Alignment Assistant</div>
+            <div style={{ fontWeight: 700, fontSize: '0.98rem', lineHeight: 1.2 }}>EduBridge AI Career Advisor</div>
+            <div style={{ fontSize: '0.72rem', opacity: 0.92, display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <span className="pulse-dot" style={{ background: '#34d399', width: '6px', height: '6px' }}></span>
+              Online • Realtime Skill Guidance
+            </div>
           </div>
         </div>
 
         <button 
           onClick={() => setIsAIChatOpen(false)}
           style={{ background: 'transparent', border: 'none', color: 'white', cursor: 'pointer', padding: '4px' }}
+          title="Close advisor"
         >
-          <X size={18} />
+          <X size={19} />
         </button>
       </div>
 
       {/* Messages Scroll Area */}
       <div style={{
         flex: 1,
-        padding: '16px',
+        padding: '18px',
         overflowY: 'auto',
         display: 'flex',
         flexDirection: 'column',
-        gap: '12px'
+        gap: '14px'
       }}>
         {aiChatMessages.map((msg, i) => {
           const isAI = msg.sender === 'ai';
@@ -87,15 +106,15 @@ export default function AIChatModal() {
               key={i}
               style={{
                 display: 'flex',
-                gap: '8px',
+                gap: '10px',
                 alignSelf: isAI ? 'flex-start' : 'flex-end',
                 maxWidth: '85%'
               }}
             >
               {isAI && (
                 <div style={{
-                  width: '28px',
-                  height: '28px',
+                  width: '30px',
+                  height: '30px',
                   borderRadius: '50%',
                   background: 'var(--accent-indigo-glow)',
                   border: '1px solid rgba(99, 102, 241, 0.4)',
@@ -105,22 +124,23 @@ export default function AIChatModal() {
                   flexShrink: 0,
                   marginTop: '2px'
                 }}>
-                  <Bot size={14} color="var(--accent-indigo)" />
+                  <Bot size={15} color="var(--accent-indigo)" />
                 </div>
               )}
 
               <div style={{
                 background: isAI ? 'var(--bg-input)' : 'linear-gradient(135deg, var(--accent-indigo) 0%, #4f46e5 100%)',
                 color: isAI ? 'var(--text-primary)' : 'white',
-                padding: '10px 14px',
-                borderRadius: isAI ? '4px 14px 14px 14px' : '14px 4px 14px 14px',
-                fontSize: '0.85rem',
-                lineHeight: 1.45,
-                border: isAI ? '1px solid var(--border-color)' : 'none',
+                padding: '11px 15px',
+                borderRadius: isAI ? '4px 16px 16px 16px' : '16px 4px 16px 16px',
+                fontSize: '0.86rem',
+                lineHeight: 1.5,
+                border: isAI ? '1px solid var(--border-subtle)' : 'none',
+                boxShadow: isAI ? '0 2px 8px rgba(0,0,0,0.15)' : '0 4px 12px rgba(99,102,241,0.3)',
                 whiteSpace: 'pre-line'
               }}>
                 {msg.text}
-                <div style={{ fontSize: '0.65rem', opacity: 0.6, marginTop: '4px', textAlign: 'right' }}>
+                <div style={{ fontSize: '0.65rem', opacity: 0.65, marginTop: '5px', textAlign: 'right', fontFamily: 'var(--font-mono)' }}>
                   {msg.timestamp}
                 </div>
               </div>
@@ -130,25 +150,27 @@ export default function AIChatModal() {
         <div ref={chatEndRef} />
       </div>
 
-      {/* Sample Quick Prompts */}
-      <div style={{ padding: '8px 12px', background: 'var(--bg-primary)', display: 'flex', gap: '6px', overflowX: 'auto', borderTop: '1px solid var(--border-color)' }}>
+      {/* Quick Prompts */}
+      <div style={{ padding: '8px 14px', background: 'var(--bg-primary)', display: 'flex', gap: '6px', overflowX: 'auto', borderTop: '1px solid var(--border-color)' }}>
         {[
           'How to boost my ATS score?',
           'Mock interview question',
-          'What skills are missing for Fullstack AI?'
+          'Missing skills for target role?'
         ].map((prompt, idx) => (
           <button
             key={idx}
             onClick={() => handlePromptClick(prompt)}
             style={{
               whiteSpace: 'nowrap',
-              fontSize: '0.7rem',
-              padding: '4px 10px',
+              fontSize: '0.72rem',
+              fontWeight: 600,
+              padding: '5px 11px',
               borderRadius: 'var(--radius-full)',
               background: 'var(--bg-input)',
               color: 'var(--accent-cyan)',
               border: '1px solid var(--border-color)',
-              cursor: 'pointer'
+              cursor: 'pointer',
+              transition: 'all 0.15s ease'
             }}
           >
             💡 {prompt}
@@ -158,7 +180,7 @@ export default function AIChatModal() {
 
       {/* Input Box */}
       <form onSubmit={handleSend} style={{
-        padding: '12px',
+        padding: '12px 14px',
         background: 'var(--bg-secondary)',
         borderTop: '1px solid var(--border-color)',
         display: 'flex',
@@ -174,7 +196,7 @@ export default function AIChatModal() {
             background: 'var(--bg-input)',
             border: '1px solid var(--border-color)',
             borderRadius: 'var(--radius-full)',
-            padding: '8px 16px',
+            padding: '9px 16px',
             color: 'var(--text-primary)',
             fontSize: '0.85rem',
             outline: 'none'
@@ -185,7 +207,7 @@ export default function AIChatModal() {
           className="btn btn-primary"
           style={{ width: '38px', height: '38px', borderRadius: '50%', padding: 0 }}
         >
-          <Send size={16} />
+          <Send size={15} />
         </button>
       </form>
 

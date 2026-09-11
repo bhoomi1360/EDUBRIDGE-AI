@@ -4,6 +4,7 @@ import {
   BookOpen, CheckSquare, Square, Clock, ExternalLink, Sparkles, 
   Trophy, X, ChevronRight, CheckCircle2, XCircle, AlertCircle
 } from 'lucide-react';
+import { useGsapStagger } from '../../utils/animations';
 
 // MCQ Quiz data per module — 12 questions each, pass mark 9/12
 const MODULE_QUIZZES = {
@@ -930,10 +931,13 @@ export default function UpskillingRoadmap() {
 
   const activeQuizModule = modules.find(m => m.id === activeQuizModuleId);
   const completedCount = modules.filter(m => m.completed).length;
-  const progressPercent = Math.round((completedCount / modules.length) * 100);
+  const progressPercent = Math.round((completedCount / (modules.length || 1)) * 100);
+
+  const containerRef = React.useRef(null);
+  useGsapStagger(containerRef, '.gsap-roadmap-item', { y: 18, stagger: 0.07 });
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+    <div ref={containerRef} style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
 
       {/* MCQ Quiz Modal */}
       {activeQuizModule && (
@@ -945,24 +949,24 @@ export default function UpskillingRoadmap() {
       )}
 
       {/* Top Banner */}
-      <div className="glass-card flex-between" style={{ gap: '20px', flexWrap: 'wrap' }}>
+      <div className="glass-card flex-between gsap-roadmap-item" style={{ gap: '20px', flexWrap: 'wrap' }}>
         <div>
           <span className="badge badge-indigo" style={{ marginBottom: '8px' }}>
             <BookOpen size={12} /> Personalized Learning Path
           </span>
-          <h2 style={{ fontSize: '1.6rem', fontWeight: 800 }}>
+          <h2 style={{ fontSize: '1.7rem', fontWeight: 800 }}>
             Upskilling Roadmap for <span className="gradient-text">{currentStudent.targetRole}</span>
           </h2>
           <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginTop: '4px' }}>
-            Complete the knowledge quiz for each module to verify your understanding and track progress.
+            Complete the knowledge check for each module to verify your understanding and track verified credentials.
           </p>
         </div>
 
         {/* Progress Card */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', minWidth: '200px' }}>
           <div className="glass-card glass-card-sm" style={{ textAlign: 'center', background: 'var(--bg-input)' }}>
-            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>ROADMAP PROGRESS</div>
-            <div style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--accent-emerald)' }}>
+            <div style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-muted)' }}>ROADMAP PROGRESS</div>
+            <div style={{ fontSize: '1.6rem', fontWeight: 800, color: 'var(--accent-emerald)', fontFamily: 'var(--font-mono)' }}>
               {completedCount} / {modules.length} ({progressPercent}%)
             </div>
           </div>
@@ -978,7 +982,7 @@ export default function UpskillingRoadmap() {
         {modules.map((mod) => (
           <div 
             key={mod.id} 
-            className="glass-card"
+            className="glass-card gsap-roadmap-item"
             style={{ 
               display: 'flex', 
               flexDirection: 'column', 

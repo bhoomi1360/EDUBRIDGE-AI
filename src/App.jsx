@@ -134,7 +134,7 @@ export default function App() {
 
           {/* Main Content Area */}
           <main className="main-content">
-            <div className="page-wrapper">
+            <div key={`${role}_${activeTab}`} className="page-wrapper" style={{ animation: 'fadeIn 0.25s ease-out' }}>
               {renderView()}
             </div>
           </main>
